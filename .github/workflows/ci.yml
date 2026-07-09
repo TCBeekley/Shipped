@@ -24,8 +24,6 @@ jobs:
       - name: Validate commit messages (PRs only)
         if: github.event_name == 'pull_request'
         uses: wagoid/commitlint-github-action@v6
-        with:
-          configFile: ./commitlint.config.js
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
