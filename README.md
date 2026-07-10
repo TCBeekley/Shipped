@@ -52,15 +52,17 @@ Deploys run on version tags (`vX.Y.Z`) via `.github/workflows/release.yml`:
 3. Creates a CloudFront invalidation so the new build is served immediately.
 
 The deploy job uses the `production` GitHub Environment and requires manual
-approval. AWS access uses OIDC (no long-lived keys). Configure these repo
-secrets before the first release:
+approval. AWS access uses OIDC (no long-lived keys) via an IAM role defined in
+[`infra/`](infra/README.md).
 
-| Secret                       | Purpose                               |
-| ---------------------------- | ------------------------------------- |
-| `AWS_ROLE_ARN`               | IAM role assumed via GitHub OIDC      |
-| `AWS_REGION`                 | AWS region of the bucket/distribution |
-| `S3_BUCKET`                  | Target S3 bucket name                 |
-| `CLOUDFRONT_DISTRIBUTION_ID` | CloudFront distribution to invalidate |
+Repo secrets:
+
+| Secret                       | Purpose                               | Status                     |
+| ---------------------------- | ------------------------------------- | -------------------------- |
+| `AWS_ROLE_ARN`               | IAM role assumed via GitHub OIDC      | ✅ set                     |
+| `AWS_REGION`                 | AWS region of the bucket/distribution | ✅ set (`us-east-1`)       |
+| `S3_BUCKET`                  | Target S3 bucket name                 | ⏳ after `Shipped-Hosting` |
+| `CLOUDFRONT_DISTRIBUTION_ID` | CloudFront distribution to invalidate | ⏳ after `Shipped-Hosting` |
 
 To cut a release:
 
@@ -68,6 +70,12 @@ To cut a release:
 git tag v0.1.0
 git push origin v0.1.0
 ```
+
+## Infrastructure
+
+AWS infrastructure is managed with CDK in [`infra/`](infra/README.md). The
+GitHub OIDC deploy role is already deployed; the S3 + CloudFront hosting stack
+is scaffolded there and can be deployed when ready.
 
 ## License
 
