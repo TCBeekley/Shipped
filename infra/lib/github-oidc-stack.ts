@@ -58,11 +58,8 @@ export class GithubOidcStack extends cdk.Stack {
       }),
     )
 
-    // Invalidate CloudFront so a new deploy is served immediately.
-    // NOTE: CreateInvalidation has no useful resource conditions, so this is
-    // currently scoped to all distributions in the account. Once the hosting
-    // stack is deployed, tighten `resources` to the specific distribution ARN:
-    //   arn:aws:cloudfront::<account>:distribution/<DISTRIBUTION_ID>
+    // Invalidate CloudFront so a new deploy is served immediately. Scoped to
+    // the single distribution that serves the SPA (from the Hosting stack).
     role.addToPolicy(
       new iam.PolicyStatement({
         sid: 'InvalidateCloudFront',
@@ -70,7 +67,9 @@ export class GithubOidcStack extends cdk.Stack {
           'cloudfront:CreateInvalidation',
           'cloudfront:GetInvalidation',
         ],
-        resources: [`arn:aws:cloudfront::${config.account}:distribution/*`],
+        resources: [
+          `arn:aws:cloudfront::${config.account}:distribution/${config.distributionId}`,
+        ],
       }),
     )
 

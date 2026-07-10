@@ -26,6 +26,13 @@ export const config = {
 
   /** S3 bucket that hosts the built SPA and is the deploy target. */
   deployBucketName: 'shipped-web-702895206239',
+
+  /**
+   * CloudFront distribution serving the SPA (output of the Hosting stack).
+   * Used to scope the deploy role's invalidation permission to just this
+   * distribution rather than all distributions in the account.
+   */
+  distributionId: 'E2YBKNUP3U5WN5',
 } as const
 
 /** The account/region env every stack in this app deploys to. */
