@@ -57,12 +57,12 @@ approval. AWS access uses OIDC (no long-lived keys) via an IAM role defined in
 
 Repo secrets:
 
-| Secret                       | Purpose                               | Status                     |
-| ---------------------------- | ------------------------------------- | -------------------------- |
-| `AWS_ROLE_ARN`               | IAM role assumed via GitHub OIDC      | ✅ set                     |
-| `AWS_REGION`                 | AWS region of the bucket/distribution | ✅ set (`us-east-1`)       |
-| `S3_BUCKET`                  | Target S3 bucket name                 | ⏳ after `Shipped-Hosting` |
-| `CLOUDFRONT_DISTRIBUTION_ID` | CloudFront distribution to invalidate | ⏳ after `Shipped-Hosting` |
+| Secret                       | Purpose                               | Status                    |
+| ---------------------------- | ------------------------------------- | ------------------------- |
+| `AWS_ROLE_ARN`               | IAM role assumed via GitHub OIDC      | ✅ set                    |
+| `AWS_REGION`                 | AWS region of the bucket/distribution | ✅ set (`us-east-1`)      |
+| `S3_BUCKET`                  | Target S3 bucket name                 | ✅ set (`shipped-web-…`)  |
+| `CLOUDFRONT_DISTRIBUTION_ID` | CloudFront distribution to invalidate | ✅ set (`E2YBKNUP3U5WN5`) |
 
 To cut a release:
 
@@ -73,9 +73,10 @@ git push origin v0.1.0
 
 ## Infrastructure
 
-AWS infrastructure is managed with CDK in [`infra/`](infra/README.md). The
-GitHub OIDC deploy role is already deployed; the S3 + CloudFront hosting stack
-is scaffolded there and can be deployed when ready.
+AWS infrastructure is managed with CDK in [`infra/`](infra/README.md). Both the
+GitHub OIDC deploy role and the S3 + CloudFront hosting stack are deployed. The
+SPA is served from CloudFront distribution `E2YBKNUP3U5WN5`
+(`d3d1a5i58tzvg4.cloudfront.net`).
 
 ## License
 

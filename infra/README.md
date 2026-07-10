@@ -6,10 +6,19 @@ Target account: **702895206239** · region: **us-east-1**.
 
 ## Stacks
 
-| Stack                | Status                  | Purpose                                                                         |
-| -------------------- | ----------------------- | ------------------------------------------------------------------------------- |
-| `Shipped-GithubOidc` | **deployed**            | IAM role GitHub Actions assumes via OIDC to deploy the SPA. No long-lived keys. |
-| `Shipped-Hosting`    | scaffold (not deployed) | Private S3 bucket + CloudFront (OAC, SPA routing) that serves the built app.     |
+| Stack                | Status       | Purpose                                                                         |
+| -------------------- | ------------ | ------------------------------------------------------------------------------- |
+| `Shipped-GithubOidc` | **deployed** | IAM role GitHub Actions assumes via OIDC to deploy the SPA. No long-lived keys. |
+| `Shipped-Hosting`    | **deployed** | Private S3 bucket + CloudFront (OAC, SPA routing) that serves the built app.     |
+
+Deployed hosting resources:
+
+- **Bucket:** `shipped-web-702895206239`
+- **Distribution:** `E2YBKNUP3U5WN5` → `d3d1a5i58tzvg4.cloudfront.net`
+
+All four release secrets (`AWS_ROLE_ARN`, `AWS_REGION`, `S3_BUCKET`,
+`CLOUDFRONT_DISTRIBUTION_ID`) are set. The OIDC role's CloudFront permission is
+scoped to distribution `E2YBKNUP3U5WN5`.
 
 Shared names/config live in [`lib/config.ts`](lib/config.ts).
 
@@ -42,19 +51,10 @@ npx cdk diff       # diff against deployed state
 npx cdk deploy Shipped-GithubOidc   # deploy a specific stack
 ```
 
-## Deploying hosting later
+## Notes
 
-When you're ready to provision hosting:
-
-```bash
-npx cdk deploy Shipped-Hosting
-```
-
-Then finish wiring the release workflow secrets from the stack outputs:
-
-- `S3_BUCKET` → `shipped-web-702895206239` (bucket name)
-- `CLOUDFRONT_DISTRIBUTION_ID` → `Shipped-Hosting.DistributionId` output
-
-and **tighten** the OIDC role's CloudFront permission in
-[`lib/github-oidc-stack.ts`](lib/github-oidc-stack.ts) from `distribution/*` to
-the specific distribution ARN, then redeploy `Shipped-GithubOidc`.
+- If the CloudFront distribution is ever replaced (new ID), update
+  `distributionId` in [`lib/config.ts`](lib/config.ts) and redeploy both the
+  `CLOUDFRONT_DISTRIBUTION_ID` secret and `Shipped-GithubOidc`.
+- The SPA itself is deployed by the app repo's release workflow
+  (`.github/workflows/release.yml`) on `v*.*.*` tags — not from here.
