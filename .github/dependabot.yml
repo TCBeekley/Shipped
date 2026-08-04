@@ -13,6 +13,13 @@ updates:
         update-types:
           - minor
           - patch
+      majors:
+        update-types:
+          - major
+      security:
+        applies-to: security-updates
+        patterns:
+          - '*'
 
   - package-ecosystem: npm
     directory: /infra
@@ -26,6 +33,13 @@ updates:
         update-types:
           - minor
           - patch
+      majors:
+        update-types:
+          - major
+      security:
+        applies-to: security-updates
+        patterns:
+          - '*'
 
   - package-ecosystem: github-actions
     directory: /
@@ -39,3 +53,10 @@ updates:
         update-types:
           - minor
           - patch
+      majors:
+        update-types:
+          - major
+      security:
+        applies-to: security-updates
+        patterns:
+          - '*'
