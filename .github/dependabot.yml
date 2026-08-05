@@ -28,6 +28,11 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    ignore:
+      # ts-jest's peer range is typescript >=4.3 <7; drop when it supports 7
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
     groups:
       minor-and-patch:
         update-types:
