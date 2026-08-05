@@ -5,13 +5,13 @@ CloudFront.
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) 20 (see `.nvmrc` — `nvm use` will pick it up)
-- npm 10+ (bundled with Node 20)
+- [Node.js](https://nodejs.org/) 24 (see `.nvmrc` — `nvm use` will pick it up)
+- npm 11+ (bundled with Node 24)
 
 ## Setup
 
 ```bash
-nvm use          # or otherwise ensure Node 20
+nvm use          # or otherwise ensure Node 24
 make setup       # install dependencies + git hooks
 cp .env.example .env.local   # then edit values as needed
 ```
