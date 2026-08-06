@@ -4,21 +4,44 @@ import App from '../src/App'
 import { renderWithUser } from './fixtures/renderWithUser'
 
 describe('<App />', () => {
-  it('renders the getting-started heading', () => {
+  it('renders the hero headline', () => {
     renderWithUser(<App />)
     expect(
-      screen.getByRole('heading', { name: /get started/i }),
+      screen.getByRole('heading', {
+        level: 1,
+        name: /shipped: apps people use, systems that stay up/i,
+      }),
     ).toBeInTheDocument()
   })
 
-  it('increments the counter when clicked', async () => {
-    const { user } = renderWithUser(<App />)
-    const button = screen.getByRole('button', { name: /count is 0/i })
+  it('features SPT-50 with its App Store CTA and shipped date', () => {
+    renderWithUser(<App />)
+    const featured = screen.getByRole('link', { name: /SPT-50/ })
 
-    await user.click(button)
+    expect(featured).toHaveAttribute('href', '/spt-50')
+    expect(featured).toHaveTextContent(/view on the app\sstore/i)
+    expect(featured).toHaveTextContent('shipped: 2026-03')
+    expect(screen.getByAltText('SPT-50 app icon')).toBeInTheDocument()
+  })
 
-    expect(
-      screen.getByRole('button', { name: /count is 1/i }),
-    ).toBeInTheDocument()
+  it('renders a card with a shipped stamp for every project', () => {
+    renderWithUser(<App />)
+
+    for (const [title, shipped] of [
+      ['Stitch', 'shipped: 2025-08'],
+      ['Transfer Tracker', 'shipped: 2025-01'],
+      ['OpenVPN fleet', 'shipped: 2026-06'],
+    ]) {
+      const card = screen.getByRole('link', { name: new RegExp(title) })
+      expect(card).toHaveTextContent(shipped)
+    }
+  })
+
+  it('links the footer to the shipped repo', () => {
+    renderWithUser(<App />)
+    expect(screen.getByRole('link', { name: /source/i })).toHaveAttribute(
+      'href',
+      'https://github.com/TCBeekley/Shipped',
+    )
   })
 })
