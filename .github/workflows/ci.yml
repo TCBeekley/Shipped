@@ -80,8 +80,11 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+      # The release workflow deploys this exact artifact (build once,
+      # deploy everywhere) — keep the name in sync with release.yml.
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist
+          retention-days: 7
