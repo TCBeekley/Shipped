@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib'
+import * as acm from 'aws-cdk-lib/aws-certificatemanager'
 import * as s3 from 'aws-cdk-lib/aws-s3'
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront'
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins'
@@ -6,13 +7,11 @@ import { Construct } from 'constructs'
 import { config } from './config'
 
 /**
- * S3 + CloudFront hosting for the Shipped SPA.
- *
- * SCAFFOLD — written for future use but not yet deployed. The bucket name
- * matches `config.deployBucketName` so the GitHub OIDC deploy role (in
- * GithubOidcStack) already grants access to it. Deploy this when you're ready
- * to provision hosting, then wire the outputs into the release workflow
- * secrets (S3_BUCKET, CLOUDFRONT_DISTRIBUTION_ID).
+ * S3 + CloudFront hosting for the Shipped SPA, served at
+ * `config.siteDomain`. The bucket name matches `config.deployBucketName` so
+ * the GitHub OIDC deploy role (in GithubOidcStack) already grants access to
+ * it; the stack outputs feed the release workflow secrets (S3_BUCKET,
+ * CLOUDFRONT_DISTRIBUTION_ID).
  */
 export class HostingStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -29,7 +28,18 @@ export class HostingStack extends cdk.Stack {
       autoDeleteObjects: true,
     })
 
+    // The beekley.dev zone lives in another account (Infra-DNS-CDK repo), so
+    // validation cannot be automated from here: deploying pauses in
+    // CREATE_IN_PROGRESS until the validation CNAME (from the ACM console or
+    // `aws acm describe-certificate`) is added to that zone.
+    const certificate = new acm.Certificate(this, 'SiteCertificate', {
+      domainName: config.siteDomain,
+      validation: acm.CertificateValidation.fromDns(),
+    })
+
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
+      domainNames: [config.siteDomain],
+      certificate,
       defaultRootObject: 'index.html',
       defaultBehavior: {
         origin: origins.S3BucketOrigin.withOriginAccessControl(bucket),

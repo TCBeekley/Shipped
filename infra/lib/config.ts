@@ -28,6 +28,13 @@ export const config = {
   deployBucketName: 'shipped-web-702895206239',
 
   /**
+   * Custom domain the site is served from. The beekley.dev hosted zone lives
+   * in a different account, managed by the Infra-DNS-CDK repo — both the
+   * `shipped` CNAME and the ACM validation record are added there.
+   */
+  siteDomain: 'shipped.beekley.dev',
+
+  /**
    * CloudFront distribution serving the SPA (output of the Hosting stack).
    * Used to scope the deploy role's invalidation permission to just this
    * distribution rather than all distributions in the account.
