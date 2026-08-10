@@ -47,8 +47,10 @@ thresholds are enforced in `vite.config.ts` and in CI. Shared fixtures live in
 
 Deploys run on version tags (`vX.Y.Z`) via `.github/workflows/release.yml`:
 
-1. Runs the full CI pipeline.
-2. Builds the SPA and `aws s3 sync`s `dist/` to the target bucket.
+1. Runs the full CI pipeline (lint, typecheck, test, build).
+2. Deploys the exact `dist` artifact that pipeline built and tested — the
+   deploy job downloads it and `aws s3 sync`s it to the target bucket; it
+   never rebuilds (build once, deploy everywhere).
 3. Creates a CloudFront invalidation so the new build is served immediately.
 
 The deploy job uses the `production` GitHub Environment and requires manual
