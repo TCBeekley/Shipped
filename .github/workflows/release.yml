@@ -17,15 +17,14 @@ jobs:
       id-token: write # required for AWS OIDC
       contents: read
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      # Deploy the exact artifact the verify pipeline built and tested —
+      # never rebuild here. The artifact is shared because verify runs via
+      # workflow_call inside this same workflow run.
+      - name: Download verified build
+        uses: actions/download-artifact@v7
         with:
-          node-version-file: .nvmrc
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Build
-        run: npm run build
+          name: dist
+          path: dist
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v6
         with:
