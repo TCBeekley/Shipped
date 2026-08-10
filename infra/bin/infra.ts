@@ -12,7 +12,7 @@ new GithubOidcStack(app, 'Shipped-GithubOidc', {
   description: 'GitHub Actions OIDC deploy role for the Shipped SPA',
 })
 
-// S3 + CloudFront hosting. Scaffolded for future use — not yet deployed.
+// S3 + CloudFront hosting.
 new HostingStack(app, 'Shipped-Hosting', {
   env,
   description: 'S3 + CloudFront hosting for the Shipped SPA',

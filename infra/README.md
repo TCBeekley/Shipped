@@ -15,6 +15,12 @@ Deployed hosting resources:
 
 - **Bucket:** `shipped-web-702895206239`
 - **Distribution:** `E2YBKNUP3U5WN5` → `d3d1a5i58tzvg4.cloudfront.net`
+- **Custom domain:** `shipped.beekley.dev` (CloudFront alias + ACM cert in
+  us-east-1). The `beekley.dev` hosted zone lives in a different account,
+  managed by the Infra-DNS-CDK repo: the `shipped` CNAME and the cert's DNS
+  validation CNAME are both added there. Deploying a cert change pauses until
+  the validation record (from `aws acm describe-certificate`) lands in that
+  zone.
 
 All four release secrets (`AWS_ROLE_ARN`, `AWS_REGION`, `S3_BUCKET`,
 `CLOUDFRONT_DISTRIBUTION_ID`) are set. The OIDC role's CloudFront permission is
