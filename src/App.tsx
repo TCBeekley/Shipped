@@ -209,7 +209,7 @@ function App() {
               <a href="https://github.com/TCBeekley">
                 github <span aria-hidden="true">↗</span>
               </a>
-              <a href="#about">
+              <a href="https://www.linkedin.com/in/tim-beekley/">
                 linkedin <span aria-hidden="true">↗</span>
               </a>
               <a href="mailto:tim@beekley.engineering">
