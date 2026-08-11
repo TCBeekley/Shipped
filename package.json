@@ -1,6 +1,6 @@
 {
   "name": "shipped",
-  "description": "Portfolio SPA at shipped.beekley.dev — React + Vite, deployed to S3/CloudFront",
+  "description": "Portfolio SPA at shipped.beekley.dev \u2014 React + Vite, deployed to S3/CloudFront",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -15,7 +15,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/prerender.mjs",
     "preview": "vite preview",
     "lint": "oxlint",
     "format": "prettier --write .",
