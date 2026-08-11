@@ -1,7 +1,7 @@
 import * as cdk from 'aws-cdk-lib'
 import * as iam from 'aws-cdk-lib/aws-iam'
 import { Construct } from 'constructs'
-import { config } from './config'
+import { config, resolveDistributionId } from './config'
 
 /**
  * IAM role assumed by GitHub Actions (via the account's existing GitHub OIDC
@@ -59,7 +59,17 @@ export class GithubOidcStack extends cdk.Stack {
     )
 
     // Invalidate CloudFront so a new deploy is served immediately. Scoped to
-    // the single distribution that serves the SPA (from the Hosting stack).
+    // the single distribution that serves the SPA (from the Hosting stack) —
+    // see resolveDistributionId for the two-step ordering when bootstrapping.
+    const distribution = resolveDistributionId(this)
+    if (!distribution.scoped) {
+      cdk.Annotations.of(this).addWarningV2(
+        'ShippedDeployRole:UnscopedInvalidation',
+        'No distributionId supplied — CloudFront invalidation is not scoped ' +
+          'to a single distribution. Pass -c distributionId=<id> (or set ' +
+          'CDK_DISTRIBUTION_ID) once the Hosting stack has been deployed.',
+      )
+    }
     role.addToPolicy(
       new iam.PolicyStatement({
         sid: 'InvalidateCloudFront',
@@ -68,7 +78,7 @@ export class GithubOidcStack extends cdk.Stack {
           'cloudfront:GetInvalidation',
         ],
         resources: [
-          `arn:aws:cloudfront::${config.account}:distribution/${config.distributionId}`,
+          `arn:aws:cloudfront::${config.account}:distribution/${distribution.id}`,
         ],
       }),
     )

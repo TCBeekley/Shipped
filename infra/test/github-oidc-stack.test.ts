@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib'
-import { Template, Match } from 'aws-cdk-lib/assertions'
+import { Template, Match, Annotations } from 'aws-cdk-lib/assertions'
 import { GithubOidcStack } from '../lib/github-oidc-stack'
 import { env, config } from '../lib/config'
 
@@ -7,6 +7,11 @@ describe('GithubOidcStack', () => {
   const app = new cdk.App()
   const stack = new GithubOidcStack(app, 'Test-GithubOidc', { env })
   const template = Template.fromStack(stack)
+
+  test('derives the deploy bucket name from the resolved account', () => {
+    expect(config.deployBucketName).toBe(`shipped-web-${config.account}`)
+    expect(config.deployBucketName).not.toMatch(/shipped-web-$/)
+  })
 
   test('creates exactly one deploy role', () => {
     template.resourceCountIs('AWS::IAM::Role', 1)
@@ -51,5 +56,45 @@ describe('GithubOidcStack', () => {
         ]),
       },
     })
+  })
+})
+
+describe('GithubOidcStack distribution scoping', () => {
+  test('scopes invalidation to the distribution supplied via context', () => {
+    const app = new cdk.App({ context: { distributionId: 'EXAMPLE12345' } })
+    const stack = new GithubOidcStack(app, 'Scoped-GithubOidc', { env })
+
+    Template.fromStack(stack).hasResourceProperties('AWS::IAM::Policy', {
+      PolicyDocument: {
+        Statement: Match.arrayWith([
+          Match.objectLike({
+            Sid: 'InvalidateCloudFront',
+            Resource: `arn:aws:cloudfront::${config.account}:distribution/EXAMPLE12345`,
+          }),
+        ]),
+      },
+    })
+  })
+
+  test('falls back to account-wide distributions and warns when unsupplied', () => {
+    const app = new cdk.App()
+    const stack = new GithubOidcStack(app, 'Unscoped-GithubOidc', { env })
+
+    Template.fromStack(stack).hasResourceProperties('AWS::IAM::Policy', {
+      PolicyDocument: {
+        Statement: Match.arrayWith([
+          Match.objectLike({
+            Sid: 'InvalidateCloudFront',
+            Resource: `arn:aws:cloudfront::${config.account}:distribution/*`,
+          }),
+        ]),
+      },
+    })
+    expect(
+      Annotations.fromStack(stack).findWarning(
+        '*',
+        Match.stringLikeRegexp('No distributionId supplied'),
+      ),
+    ).toHaveLength(1)
   })
 })

@@ -76,10 +76,11 @@ deployment in the Actions run.
 
 ## Infrastructure
 
-AWS infrastructure is managed with CDK in [`infra/`](infra/README.md). Both the
-GitHub OIDC deploy role and the S3 + CloudFront hosting stack are deployed. The
-SPA is served from CloudFront distribution `E2YBKNUP3U5WN5`
-(`d3d1a5i58tzvg4.cloudfront.net`).
+AWS infrastructure is managed with CDK in [`infra/`](infra/README.md): a GitHub
+OIDC deploy role and an S3 + CloudFront hosting stack serving
+[shipped.beekley.dev](https://shipped.beekley.dev). Account-specific
+identifiers resolve at synth time rather than being committed — see the
+[infra README](infra/README.md#resolving-values).
 
 ## License
 
