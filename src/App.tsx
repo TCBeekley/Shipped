@@ -55,18 +55,17 @@ const projects: Project[] = [
     ),
   },
   {
-    href: '/transfer-tracker',
-    kicker: 'Data · analytics',
+    href: '/transfer-tracker.html',
+    kicker: 'Data · pipeline',
     title: 'Transfer Tracker',
     pitch:
-      'Scraping and analytics for D1 baseball transfers — who moved, where, and what it means.',
-    stack: 'Python · Metabase',
-    cta: 'See the data',
+      'Scheduled capture of the D1 baseball transfer portal — every version kept, so "what changed" is a SQL question. About a dollar a month.',
+    stack: 'Python · Lambda · S3 · Parquet',
+    cta: 'Read the pipeline',
     shipped: '2025-01',
     preview: (
       <div className="card-preview">
-        <span className="preview-tag">metabase dashboard</span>
-        <span className="soon-badge">case study soon</span>
+        <span className="preview-tag">capture pipeline · case study</span>
       </div>
     ),
   },

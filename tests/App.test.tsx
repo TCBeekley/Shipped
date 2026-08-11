@@ -40,7 +40,7 @@ describe('<App />', () => {
 
   it('labels every card as a pending case study', () => {
     render(<App />)
-    expect(screen.getAllByText('case study soon')).toHaveLength(5)
+    expect(screen.getAllByText('case study soon')).toHaveLength(4)
   })
 
   it('points the about links at real destinations', () => {
@@ -53,6 +53,16 @@ describe('<App />', () => {
     ] as const) {
       expect(screen.getByRole('link', { name })).toHaveAttribute('href', href)
     }
+  })
+
+  it('links Transfer Tracker to its published case study', () => {
+    render(<App />)
+    const card = screen.getByRole('link', { name: /Transfer Tracker/ })
+
+    expect(card).toHaveAttribute('href', '/transfer-tracker.html')
+    expect(card).toHaveTextContent(/read the pipeline/i)
+    // The case study exists, so this card carries no "soon" badge.
+    expect(card).not.toHaveTextContent(/case study soon/i)
   })
 
   it('links the footer to the shipped repo', () => {

@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -12,6 +13,15 @@ export default defineConfig({
     // to avoid — and base64 inflates them ~33% on the way in. Emitting real
     // files also keeps them content-hashed and independently cacheable.
     assetsInlineLimit: 0,
+    rollupOptions: {
+      // Multi-page: the home page is the React app; case studies are plain
+      // HTML entries that ship no JavaScript at all. Each is a real document,
+      // so crawlers and link unfurlers see content without executing anything.
+      input: {
+        main: resolve(import.meta.dirname, 'index.html'),
+        transferTracker: resolve(import.meta.dirname, 'transfer-tracker.html'),
+      },
+    },
   },
   test: {
     globals: true,
