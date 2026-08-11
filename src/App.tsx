@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import spt50Icon from './assets/spt50-icon.png'
+import cpapIcon from './assets/cpap-icon.svg'
 import './App.css'
 
 const REPO_URL = 'https://github.com/TCBeekley/Shipped'
@@ -16,6 +17,22 @@ interface Project {
 }
 
 const projects: Project[] = [
+  {
+    href: '/cpap-tracker',
+    kicker: 'Utility · macOS · Swift',
+    title: 'CPAP Tracker',
+    pitch:
+      'Offline-first macOS app that tracks when CPAP consumables need replacing — calendar-aware scheduling, a local JSON store, no accounts, no cloud.',
+    stack: 'SwiftUI · Codable · macOS 14',
+    cta: 'See the build',
+    shipped: '2026-08',
+    preview: (
+      <div className="card-preview card-preview--icon">
+        <img src={cpapIcon} alt="" width="72" height="72" />
+        <span className="soon-badge">case study soon</span>
+      </div>
+    ),
+  },
   {
     href: '/stitch',
     kicker: 'Web app · live',
@@ -138,7 +155,7 @@ function App() {
                 <span className="dot" aria-hidden="true">
                   ●
                 </span>
-                &nbsp; 4 things shipped
+                &nbsp; 5 things shipped
               </span>
               <span className="chip">web · iOS · infra</span>
               <span className="chip">React · Swift · Python · AWS</span>

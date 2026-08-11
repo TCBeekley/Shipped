@@ -27,6 +27,7 @@ describe('<App />', () => {
     render(<App />)
 
     for (const [title, shipped] of [
+      ['CPAP Tracker', 'shipped: 2026-08'],
       ['Stitch', 'shipped: 2025-08'],
       ['Transfer Tracker', 'shipped: 2025-01'],
       ['OpenVPN fleet', 'shipped: 2026-06'],
@@ -38,7 +39,7 @@ describe('<App />', () => {
 
   it('labels every card as a pending case study', () => {
     render(<App />)
-    expect(screen.getAllByText('case study soon')).toHaveLength(4)
+    expect(screen.getAllByText('case study soon')).toHaveLength(5)
   })
 
   it('links the footer to the shipped repo', () => {

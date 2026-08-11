@@ -1,0 +1,11 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Industry app icon: steel field squircle, Lucide wind at stroke 1.9,
+       middle gust in accent-400. Canvas margins per macOS icon grid. -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="#1d2d3d"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round"
+     transform="translate(244,244) scale(22.3)" stroke-width="1.9">
+    <path d="M9.8 4.4A2 2 0 1 1 11 8H2" stroke="#f2f2f3"/>
+    <path d="M17.5 8a2.5 2.5 0 1 1 2 4H2" stroke="#94bce3"/>
+    <path d="M12.8 19.6A2 2 0 1 0 14 16H2" stroke="#f2f2f3"/>
+  </g>
+</svg>
