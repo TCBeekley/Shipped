@@ -39,18 +39,17 @@ const projects: Project[] = [
     ),
   },
   {
-    href: '/cpap-tracker',
+    href: '/cpap-tracker.html',
     kicker: 'Utility · macOS · Swift',
     title: 'CPAP Tracker',
     pitch:
       'Offline-first macOS app that tracks when CPAP consumables need replacing — calendar-aware scheduling, a local JSON store, no accounts, no cloud.',
     stack: 'SwiftUI · Codable · macOS 14',
-    cta: 'See the build',
+    cta: 'Read the case study',
     shipped: '2026-08',
     preview: (
       <div className="card-preview card-preview--icon">
         <img src={cpapIcon} alt="" width="72" height="72" />
-        <span className="soon-badge">case study soon</span>
       </div>
     ),
   },

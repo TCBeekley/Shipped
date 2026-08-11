@@ -41,7 +41,7 @@ describe('<App />', () => {
 
   it('labels every card as a pending case study', () => {
     render(<App />)
-    expect(screen.getAllByText('case study soon')).toHaveLength(4)
+    expect(screen.getAllByText('case study soon')).toHaveLength(3)
   })
 
   it('points the about links at real destinations', () => {
@@ -61,6 +61,14 @@ describe('<App />', () => {
     const card = screen.getByRole('link', { name: /NCHSAA Bracket Projector/ })
 
     expect(card).toHaveAttribute('href', '/nchsaa-seeding.html')
+    expect(card).not.toHaveTextContent(/case study soon/i)
+  })
+
+  it('links CPAP Tracker to its published case study', () => {
+    render(<App />)
+    const card = screen.getByRole('link', { name: /CPAP Tracker/ })
+
+    expect(card).toHaveAttribute('href', '/cpap-tracker.html')
     expect(card).not.toHaveTextContent(/case study soon/i)
   })
 
