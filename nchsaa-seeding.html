@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="NCHSAA Bracket Projector — live RPI standings, the official seeding rules applied in code, and projected playoff brackets for two sports across eight classifications."
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#fafafa"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#18181b"
+    />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="NCHSAA Bracket Projector — case study" />
+    <meta
+      property="og:description"
+      content="Live RPI standings, the official NCHSAA seeding rules applied in code, and projected playoff brackets for two sports across eight classifications."
+    />
+    <meta
+      property="og:url"
+      content="https://shipped.beekley.dev/nchsaa-seeding.html"
+    />
+    <meta
+      property="og:image"
+      content="https://shipped.beekley.dev/og-card.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="shipped: apps people use, systems that stay up. shipped.beekley.dev — web, iOS, infrastructure."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="canonical"
+      href="https://shipped.beekley.dev/nchsaa-seeding.html"
+    />
+    <link rel="stylesheet" href="/src/index.css" />
+    <link rel="stylesheet" href="/src/pages/case-study.css" />
+    <title>NCHSAA Bracket Projector — shipped.beekley.dev</title>
+  </head>
+  <body>
+    <div class="page">
+      <div class="container">
+        <header class="site-header">
+          <a href="/" class="wordmark">
+            shipped<span class="wordmark-dot">.</span
+            ><span class="wordmark-domain">beekley.dev</span>
+          </a>
+          <nav class="site-nav" aria-label="Site">
+            <a href="/#projects">projects</a>
+            <a href="/#about">about</a>
+            <a href="mailto:tim@beekley.engineering">contact</a>
+          </nav>
+        </header>
+
+        <main>
+          <article class="case">
+            <p class="eyebrow">Case study · web app · live</p>
+            <h1 class="case-title">NCHSAA Bracket Projector</h1>
+            <p class="case-lede">
+              North Carolina high school baseball and softball teams find out
+              their playoff seeding when the brackets are published. This pulls
+              the live RPI standings every hour, applies the association's own
+              seeding rules in code, and shows the bracket as it stands right
+              now — two sports, eight classifications, 446 schools.
+            </p>
+
+            <ul class="chip-row case-chips">
+              <li class="chip">
+                <span class="dot" aria-hidden="true">●</span>&nbsp; live
+              </li>
+              <li class="chip">React · FastAPI · DynamoDB</li>
+              <li class="chip">shipped: 2026-05</li>
+            </ul>
+
+            <p class="case-cta-row">
+              <a class="case-cta" href="https://seeding.beekley.engineering"
+                >Open the projector <span aria-hidden="true">↗</span></a
+              >
+            </p>
+
+            <figure class="shot">
+              <picture>
+                <source
+                  media="(prefers-color-scheme: dark)"
+                  type="image/webp"
+                  srcset="
+                    /src/assets/nchsaa/bracket-dark-1100.webp 1x,
+                    /src/assets/nchsaa/bracket-dark-2200.webp 2x
+                  "
+                />
+                <img
+                  src="/src/assets/nchsaa/bracket-light-1100.webp"
+                  srcset="
+                    /src/assets/nchsaa/bracket-light-1100.webp 1x,
+                    /src/assets/nchsaa/bracket-light-2200.webp 2x
+                  "
+                  width="1100"
+                  height="716"
+                  loading="lazy"
+                  decoding="async"
+                  alt="The 4A baseball playoff bracket: 48 qualifiers split into East and West halves, each round shown as a column of matchups, with a state championship at the centre."
+                />
+              </picture>
+              <figcaption>
+                The 4A baseball bracket in playoff mode, frozen at the start of
+                the postseason with results filled in as games are played. The
+                app ships light and dark themes; this figure follows yours.
+              </figcaption>
+            </figure>
+
+            <h2>The problem worth solving</h2>
+            <p>
+              The association publishes RPI standings, and it publishes the
+              rules for turning those standings into a playoff bracket. What it
+              does not publish, until the brackets are final, is the bracket
+              itself. So every coach, parent, and player spends the back half of
+              the season doing the same arithmetic by hand and arguing about the
+              result.
+            </p>
+            <p>
+              The rules are entirely mechanical. If the standings are a feed and
+              the rules are code, the bracket is just a function of the two —
+              recomputed as often as the standings move.
+            </p>
+
+            <h2>The seeding rules, in code</h2>
+            <p>
+              The engine applies the association's process end to end: drop
+              ineligible and opted-out teams, sort by RPI, take the top 48
+              qualifiers (24 in the largest classification), then split the
+              field East and West.
+            </p>
+            <p>
+              That split is the part worth explaining. The obvious
+              implementation is a longitude threshold — everything east of some
+              line goes East. That produces lopsided brackets the moment a
+              classification's schools cluster on one side of the state. Instead
+              the qualifiers are sorted by longitude and cut exactly in half, so
+              the two regions are always the same size — 24 and 24, or 12 and 12
+              — no matter how the geography falls that year. Each region is then
+              re-seeded by RPI, and byes go to the top seeds.
+            </p>
+            <p>
+              Regular-season conference alignment is deliberately
+              <em>not</em> used for the split, even though it ships in the same
+              source file: it answers a different question than "which half of
+              the state is this school in."
+            </p>
+
+            <h2>How it runs</h2>
+            <ol class="pipeline">
+              <li class="stage">
+                <span class="stage-label">Scheduler</span>
+                <p class="stage-detail">
+                  EventBridge invokes the scraper hourly from 6 AM to 11 PM
+                  Eastern — the window when standings actually change.
+                </p>
+              </li>
+              <li class="stage">
+                <span class="stage-label">Scraper Lambda</span>
+                <p class="stage-detail">
+                  Playwright and Chromium in a container image, because the
+                  standings only exist as a rendered page. Writes RPI rows into
+                  a cache table with a 24-hour TTL.
+                </p>
+              </li>
+              <li class="stage">
+                <span class="stage-label">API Lambda</span>
+                <p class="stage-detail">
+                  FastAPI behind Mangum on ARM, fronted by an HTTP API gateway.
+                  Reads the cached standings, runs the seeding engine, returns a
+                  bracket.
+                </p>
+              </li>
+              <li class="stage">
+                <span class="stage-label">DynamoDB</span>
+                <p class="stage-detail">
+                  On-demand tables for standings, school metadata, name aliases,
+                  admin sessions, and — once the postseason starts — frozen
+                  bracket snapshots and entered results.
+                </p>
+              </li>
+              <li class="stage">
+                <span class="stage-label">CloudFront</span>
+                <p class="stage-detail">
+                  One distribution serving the React build from S3 and routing
+                  <code>/api/*</code> to the gateway uncached.
+                </p>
+              </li>
+            </ol>
+            <p>
+              Everything talks over IAM — no connection strings, no private
+              networking to maintain. Infrastructure is CDK; deploys run from
+              <code>main</code> through GitHub Actions.
+            </p>
+
+            <h2>Details that took the longest</h2>
+            <dl class="decisions">
+              <dt>Two names for the same school</dt>
+              <dd>
+                The standings page and the official member-schools file disagree
+                about what schools are called. An alias table maps display names
+                to canonical ones, so a rename upstream is a data fix rather
+                than a code change — and a school that fails to match still
+                appears in the bracket instead of vanishing from it.
+              </dd>
+
+              <dt>Geocoding once, not per request</dt>
+              <dd>
+                Splitting East from West needs a longitude for all 446 schools.
+                Those are resolved once by a script against the official
+                member-schools export and stored; the geocoding service is never
+                in the request path. A school missing coordinates gets a
+                sentinel value and a predictable placement rather than an
+                exception.
+              </dd>
+
+              <dt>Fuzzy matching with a human in the loop</dt>
+              <dd>
+                Every school links to its MaxPreps page, matched by fuzzy string
+                comparison against their directory. Confident matches are
+                written automatically; borderline ones queue up in the admin UI
+                for one-click review. Automating the easy 90% and asking a
+                person about the rest beats guessing and being subtly wrong on
+                team pages.
+              </dd>
+
+              <dt>Projection stops when the postseason starts</dt>
+              <dd>
+                Once brackets are official, a projector is worse than useless —
+                it would contradict reality. Playoff mode freezes a snapshot of
+                the bracket and switches the app to recording actual results, so
+                the same page keeps being the right page.
+              </dd>
+            </dl>
+
+            <h2>Stack</h2>
+            <p class="stack-line">
+              React 18 · Vite · TypeScript · Tailwind · FastAPI · Mangum · AWS
+              Lambda · DynamoDB · CloudFront · API Gateway · EventBridge
+              Scheduler · Playwright · AWS CDK · GitHub Actions
+            </p>
+
+            <aside class="callout" aria-labelledby="disclaimer-heading">
+              <h2 id="disclaimer-heading" class="callout-title">Unofficial</h2>
+              <p>
+                A fan project, not affiliated with or endorsed by the NCHSAA.
+                Standings come from the association's public website and
+                projections are unofficial.
+              </p>
+            </aside>
+
+            <p class="case-footer-links">
+              <a href="https://seeding.beekley.engineering"
+                >open the projector <span aria-hidden="true">↗</span></a
+              >
+              <a href="/#projects">back to projects</a>
+            </p>
+          </article>
+        </main>
+
+        <footer class="site-footer">
+          shipped.beekley.dev &nbsp;·&nbsp; web · iOS · infra &nbsp;·&nbsp;
+          evidence over claims, done over described &nbsp;·&nbsp;
+          <a href="https://github.com/TCBeekley/Shipped">source ↗</a>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

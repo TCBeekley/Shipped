@@ -6,6 +6,7 @@ import spt50Icon140Webp from './assets/spt50-icon-140.webp'
 import spt50Icon280Webp from './assets/spt50-icon-280.webp'
 import spt50Icon420Webp from './assets/spt50-icon-420.webp'
 import cpapIcon from './assets/cpap-icon.svg'
+import nchsaaCard from './assets/nchsaa/bracket-card.webp'
 import './App.css'
 
 const REPO_URL = 'https://github.com/TCBeekley/Shipped'
@@ -22,6 +23,21 @@ interface Project {
 }
 
 const projects: Project[] = [
+  {
+    href: '/nchsaa-seeding.html',
+    kicker: 'Web app · live',
+    title: 'NCHSAA Bracket Projector',
+    pitch:
+      'Live RPI standings turned into projected high school playoff brackets — two sports, eight classifications, 446 schools, refreshed hourly.',
+    stack: 'React · FastAPI · DynamoDB · CDK',
+    cta: 'Read the case study',
+    shipped: '2026-05',
+    preview: (
+      <div className="card-preview card-preview--shot">
+        <img src={nchsaaCard} alt="" width="360" height="180" loading="lazy" />
+      </div>
+    ),
+  },
   {
     href: '/cpap-tracker',
     kicker: 'Utility · macOS · Swift',
@@ -159,7 +175,7 @@ function App() {
                 <span className="dot" aria-hidden="true">
                   ●
                 </span>
-                &nbsp; 5 things shipped
+                &nbsp; 6 things shipped
               </span>
               <span className="chip">web · iOS · infra</span>
               <span className="chip">React · Swift · Python · AWS</span>

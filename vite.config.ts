@@ -20,6 +20,7 @@ export default defineConfig({
       input: {
         main: resolve(import.meta.dirname, 'index.html'),
         transferTracker: resolve(import.meta.dirname, 'transfer-tracker.html'),
+        nchsaaSeeding: resolve(import.meta.dirname, 'nchsaa-seeding.html'),
       },
     },
   },
