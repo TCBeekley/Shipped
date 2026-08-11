@@ -37,6 +37,73 @@ export class HostingStack extends cdk.Stack {
       validation: acm.CertificateValidation.fromDns(),
     })
 
+    // CSP is tuned to what `npm run build` actually emits: one external
+    // module script, one external stylesheet, no inline script or style.
+    // `data:` is required for img-src because Vite inlines small SVG assets
+    // (the CPAP card icon) as data URIs. Nothing is fetched cross-origin, so
+    // default-src stays 'self'. Re-check this string if the build ever gains
+    // inline styles, web fonts, or an analytics beacon.
+    const contentSecurityPolicy = [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self'",
+      "img-src 'self' data:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'none'",
+      "frame-ancestors 'none'",
+    ].join('; ')
+
+    const responseHeaders = new cloudfront.ResponseHeadersPolicy(
+      this,
+      'SecurityHeaders',
+      {
+        comment: 'Security headers for the Shipped SPA',
+        securityHeadersBehavior: {
+          contentSecurityPolicy: {
+            contentSecurityPolicy,
+            override: true,
+          },
+          contentTypeOptions: { override: true }, // nosniff
+          frameOptions: {
+            frameOption: cloudfront.HeadersFrameOption.DENY,
+            override: true,
+          },
+          referrerPolicy: {
+            referrerPolicy:
+              cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
+            override: true,
+          },
+          strictTransportSecurity: {
+            accessControlMaxAge: cdk.Duration.days(730),
+            includeSubdomains: true,
+            // Preload deliberately off: the beekley.dev zone is managed in a
+            // different account, and preload submission is hard to reverse.
+            preload: false,
+            override: true,
+          },
+        },
+        customHeadersBehavior: {
+          customHeaders: [
+            {
+              header: 'Permissions-Policy',
+              value: [
+                'accelerometer=()',
+                'camera=()',
+                'geolocation=()',
+                'gyroscope=()',
+                'magnetometer=()',
+                'microphone=()',
+                'payment=()',
+                'usb=()',
+              ].join(', '),
+              override: true,
+            },
+          ],
+        },
+      },
+    )
+
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
       domainNames: [config.siteDomain],
       certificate,
@@ -46,6 +113,7 @@ export class HostingStack extends cdk.Stack {
         viewerProtocolPolicy:
           cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        responseHeadersPolicy: responseHeaders,
       },
       // SPA client-side routing: serve index.html for unknown paths.
       errorResponses: [
