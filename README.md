@@ -1,7 +1,20 @@
 # Shipped
 
-A React single-page application (TypeScript + Vite), deployed to AWS S3 +
-CloudFront.
+[![CI](https://github.com/TCBeekley/Shipped/actions/workflows/ci.yml/badge.svg)](https://github.com/TCBeekley/Shipped/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/TCBeekley/Shipped/actions/workflows/codeql.yml/badge.svg)](https://github.com/TCBeekley/Shipped/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
+
+The source of [shipped.beekley.dev](https://shipped.beekley.dev) — a portfolio
+whose argument is that every project on it is real: live, downloadable, or
+running in production. The home page is a React single-page app; each case
+study is a plain HTML page that ships no JavaScript at all. Everything is
+served from S3 behind CloudFront, deployed by a build-once pipeline that tags
+each build and promotes the exact artifact CI tested.
+
+The repository is part of the work product: if the site claims the
+infrastructure and delivery are sound, this is where you check.
+
+<img src="docs/screenshot-home.webp" alt="The shipped.beekley.dev home page: a teal-accented headline over a grid of project cards, each stamped with the month it shipped." width="900">
 
 ## Prerequisites
 

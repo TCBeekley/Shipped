@@ -17,12 +17,11 @@ export class GithubOidcStack extends cdk.Stack {
     // The OIDC provider already exists in this account (other repos use it),
     // so we import it rather than creating a duplicate.
     const providerArn = `arn:aws:iam::${config.account}:oidc-provider/token.actions.githubusercontent.com`
-    const provider =
-      iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
-        this,
-        'GithubOidcProvider',
-        providerArn,
-      )
+    const provider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
+      this,
+      'GithubOidcProvider',
+      providerArn,
+    )
 
     const principal = new iam.OpenIdConnectPrincipal(provider, {
       StringEquals: {

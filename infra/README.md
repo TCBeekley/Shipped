@@ -12,7 +12,7 @@ Everything resolves at synth time from the environment or CDK context; see
 | Stack                | Purpose                                                                         |
 | -------------------- | ------------------------------------------------------------------------------- |
 | `Shipped-GithubOidc` | IAM role GitHub Actions assumes via OIDC to deploy the SPA. No long-lived keys. |
-| `Shipped-Hosting`    | Private S3 bucket + CloudFront (OAC, SPA routing) that serves the built app.     |
+| `Shipped-Hosting`    | Private S3 bucket + CloudFront (OAC, SPA routing) that serves the built app.    |
 
 Hosting resources:
 
@@ -33,12 +33,12 @@ Shared names/config live in [`lib/config.ts`](lib/config.ts).
 
 ## Resolving values
 
-| Value                | How it resolves                                                             | Where the real one comes from                                      |
-| -------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Account id           | `CDK_DEPLOY_ACCOUNT`, else `CDK_DEFAULT_ACCOUNT` (from active credentials)  | `aws sts get-caller-identity --query Account`                       |
-| Deploy bucket        | derived: `shipped-web-<account-id>`                                          | `Shipped-Hosting` output `BucketName`                               |
-| Distribution id      | `-c distributionId=<id>`, else `CDK_DISTRIBUTION_ID`, else `*` with a warning | `Shipped-Hosting` output `DistributionId`                           |
-| Cert validation CNAME | n/a (manual, cross-account)                                                 | `aws acm describe-certificate --certificate-arn <arn>`              |
+| Value                 | How it resolves                                                               | Where the real one comes from                          |
+| --------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Account id            | `CDK_DEPLOY_ACCOUNT`, else `CDK_DEFAULT_ACCOUNT` (from active credentials)    | `aws sts get-caller-identity --query Account`          |
+| Deploy bucket         | derived: `shipped-web-<account-id>`                                           | `Shipped-Hosting` output `BucketName`                  |
+| Distribution id       | `-c distributionId=<id>`, else `CDK_DISTRIBUTION_ID`, else `*` with a warning | `Shipped-Hosting` output `DistributionId`              |
+| Cert validation CNAME | n/a (manual, cross-account)                                                   | `aws acm describe-certificate --certificate-arn <arn>` |
 
 Synth fails with an actionable error if the account cannot be resolved —
 there is deliberately no default, so you cannot silently target the wrong

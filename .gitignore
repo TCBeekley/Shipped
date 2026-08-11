@@ -15,10 +15,9 @@ dist-ssr
 # Test coverage
 coverage
 
-# Local env files (keep .env.example tracked)
+# Local env files
 .env
 .env.*
-!.env.example
 
 # Editor directories and files
 .vscode/*

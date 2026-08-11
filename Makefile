@@ -1,8 +1,10 @@
 .PHONY: setup lint format test test-cov run build preview typecheck ci
 
-# Install dependencies and git hooks.
+# Install dependencies and git hooks. `npm ci` deliberately has no fallback:
+# if it fails, the lockfile and package.json disagree and that needs fixing,
+# not papering over with an install that rewrites the lockfile.
 setup:
-	npm ci || npm install
+	npm ci
 
 # Static analysis.
 lint:
