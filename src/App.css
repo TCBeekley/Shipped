@@ -146,6 +146,11 @@
   min-height: 250px;
   flex: 1 1 320px;
 
+  picture {
+    display: block;
+    font-size: 0; /* no inline-descender gap under the image */
+  }
+
   img {
     width: 140px;
     height: 140px;

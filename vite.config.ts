@@ -5,6 +5,14 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    // Never inline assets as data URIs. Vite's 4 KB default would fold the
+    // 1x/2x icon variants into the JS bundle, so every visitor downloads
+    // every variant regardless of their DPR — exactly what the srcset exists
+    // to avoid — and base64 inflates them ~33% on the way in. Emitting real
+    // files also keeps them content-hashed and independently cacheable.
+    assetsInlineLimit: 0,
+  },
   test: {
     globals: true,
     environment: 'jsdom',
