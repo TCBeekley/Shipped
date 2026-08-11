@@ -23,11 +23,12 @@ const projects: Project[] = [
     pitch:
       'Uniform ordering for travel sports organizations — teams order, orgs approve, vendors fulfill.',
     stack: 'React · FastAPI · DynamoDB',
-    cta: 'Open the app →',
+    cta: 'Open the app',
     shipped: '2025-08',
     preview: (
       <div className="card-preview">
         <span className="preview-tag">live app preview</span>
+        <span className="soon-badge">case study soon</span>
       </div>
     ),
   },
@@ -38,11 +39,12 @@ const projects: Project[] = [
     pitch:
       'Scraping and analytics for D1 baseball transfers — who moved, where, and what it means.',
     stack: 'Python · Metabase',
-    cta: 'See the data →',
+    cta: 'See the data',
     shipped: '2025-01',
     preview: (
       <div className="card-preview">
         <span className="preview-tag">metabase dashboard</span>
+        <span className="soon-badge">case study soon</span>
       </div>
     ),
   },
@@ -53,17 +55,21 @@ const projects: Project[] = [
     pitch:
       'Four failure modes survived with ~zero dollars of new infrastructure. No load balancer, no ASG.',
     stack: 'EC2 · CloudWatch · Route 53',
-    cta: 'Read the design →',
+    cta: 'Read the design',
     shipped: '2026-06',
     preview: (
       <div className="card-preview card-preview--fleet">
         <span className="chip">
-          <span className="dot">●</span>&nbsp; $0/mo incremental
+          <span className="dot" aria-hidden="true">
+            ●
+          </span>
+          &nbsp; $0/mo incremental
         </span>
         <div className="fleet-preview-row">
           <span className="chip">4 regions</span>
           <span className="chip">no hot standby</span>
         </div>
+        <span className="soon-badge">case study soon</span>
       </div>
     ),
   },
@@ -88,7 +94,9 @@ function ProjectCard({
         <p className="card-pitch">{pitch}</p>
         <p className="card-stack">{stack}</p>
         <div className="card-foot">
-          <span className="card-cta">{cta}</span>
+          <span className="card-cta">
+            {cta} <span aria-hidden="true">→</span>
+          </span>
           <span className="shipped-stamp">shipped: {shipped}</span>
         </div>
       </div>
@@ -108,7 +116,7 @@ function App() {
           <nav className="site-nav" aria-label="Site">
             <a href="#projects">projects</a>
             <a href="#about">about</a>
-            <a href="#about">contact</a>
+            <a href="mailto:tim@beekley.engineering">contact</a>
           </nav>
         </header>
 
@@ -127,7 +135,10 @@ function App() {
             </p>
             <div className="chip-row">
               <span className="chip">
-                <span className="dot">●</span>&nbsp; 4 things shipped
+                <span className="dot" aria-hidden="true">
+                  ●
+                </span>
+                &nbsp; 4 things shipped
               </span>
               <span className="chip">web · iOS · infra</span>
               <span className="chip">React · Swift · Python · AWS</span>
@@ -138,6 +149,7 @@ function App() {
             <p className="eyebrow">Featured · on the App Store</p>
             <a href="/spt-50" className="featured-card">
               <div className="featured-art">
+                <span className="soon-badge">case study soon</span>
                 <img
                   src={spt50Icon}
                   alt="SPT-50 app icon"
@@ -154,7 +166,8 @@ function App() {
                 </p>
                 <div className="featured-meta">
                   <span className="store-button">
-                    View on the App&nbsp;Store&nbsp;↗
+                    View on the App&nbsp;Store&nbsp;
+                    <span aria-hidden="true">↗</span>
                   </span>
                   <span className="shipped-stamp">shipped: 2026-03</span>
                 </div>
@@ -176,9 +189,15 @@ function App() {
               résumé; every entry above is live.
             </p>
             <div className="about-links">
-              <a href="https://github.com/TCBeekley">github ↗</a>
-              <a href="#about">linkedin ↗</a>
-              <a href="mailto:tim@beekley.engineering">email ↗</a>
+              <a href="https://github.com/TCBeekley">
+                github <span aria-hidden="true">↗</span>
+              </a>
+              <a href="#about">
+                linkedin <span aria-hidden="true">↗</span>
+              </a>
+              <a href="mailto:tim@beekley.engineering">
+                email <span aria-hidden="true">↗</span>
+              </a>
             </div>
           </section>
         </main>
@@ -186,7 +205,9 @@ function App() {
         <footer className="site-footer">
           shipped.beekley.dev &nbsp;·&nbsp; web · iOS · infra &nbsp;·&nbsp;
           evidence over claims, done over described &nbsp;·&nbsp;{' '}
-          <a href={REPO_URL}>source ↗</a>
+          <a href={REPO_URL}>
+            source <span aria-hidden="true">↗</span>
+          </a>
         </footer>
       </div>
     </div>

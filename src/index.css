@@ -11,6 +11,10 @@
   --border-faint: #f1f1f2;
   --accent: #0d9488;
   --accent-hover: #0f766e;
+  --border-dashed: #d4d4d8;
+  --stripe: #f4f4f5;
+  --preview-bg: #fbfbfc;
+  --spt50-green: #2e6f4f;
 
   --sans: -apple-system, 'Helvetica Neue', Arial, sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, monospace;

@@ -1,10 +1,17 @@
 {
   "name": "shipped",
+  "description": "Portfolio SPA at shipped.beekley.dev — React + Vite, deployed to S3/CloudFront",
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "license": "MIT",
+  "author": "Tim Beekley",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TCBeekley/Shipped.git"
+  },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "scripts": {
     "dev": "vite",

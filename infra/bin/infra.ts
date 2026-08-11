@@ -6,7 +6,7 @@ import { env } from '../lib/config'
 
 const app = new cdk.App()
 
-// The GitHub Actions OIDC deploy role. Deployed now.
+// The GitHub Actions OIDC deploy role.
 new GithubOidcStack(app, 'Shipped-GithubOidc', {
   env,
   description: 'GitHub Actions OIDC deploy role for the Shipped SPA',
