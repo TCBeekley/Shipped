@@ -117,11 +117,13 @@ function App() {
             <p className="eyebrow">Portfolio · web + mobile + infrastructure</p>
             <h1>
               <span className="accent">shipped:</span> apps people use, systems
-              that stay up.
+              that stay up, proof you can click.
             </h1>
             <p className="hero-sub">
-              Three products and a fleet — each one live, each one evidence. The
-              app, the API, and the boxes it runs on.
+              I take ideas from first commit to real users — the interface, the
+              API behind it, and the infrastructure underneath. Everything here
+              is live, in production or on the App Store, so you can check the
+              work instead of taking my word for it.
             </p>
             <div className="chip-row">
               <span className="chip">
