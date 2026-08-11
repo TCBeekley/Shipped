@@ -96,6 +96,37 @@
               </p>
             </aside>
 
+            <figure class="shot">
+              <picture>
+                <source
+                  media="(prefers-color-scheme: dark)"
+                  type="image/webp"
+                  srcset="
+                    /src/assets/cpap/board-dark-1100.webp 1x,
+                    /src/assets/cpap/board-dark-2200.webp 2x
+                  "
+                />
+                <img
+                  src="/src/assets/cpap/board-light-1100.webp"
+                  srcset="
+                    /src/assets/cpap/board-light-1100.webp 1x,
+                    /src/assets/cpap/board-light-2200.webp 2x
+                  "
+                  width="1100"
+                  height="855"
+                  loading="lazy"
+                  decoding="async"
+                  alt="The Supply Board: a summary strip showing the next date supplies are due, how many items fall on it, and how many are overdue, above a months-long timeline; below that, one card per batch of components sharing a due date, each with a single mark-all-replaced action."
+                />
+              </picture>
+              <figcaption>
+                The Supply Board. Components that come due together are grouped
+                into one batch with one primary action; per-row replacement
+                stays deliberately quiet. Light and dark ship together — this
+                figure follows your system setting.
+              </figcaption>
+            </figure>
+
             <h2>Dates are the hard part</h2>
             <p>
               "Every month" sounds trivial until the month is February. If you
