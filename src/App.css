@@ -30,7 +30,7 @@
   }
 
   .wordmark-dot {
-    color: var(--accent);
+    color: var(--accent-text);
   }
 
   .wordmark-domain {
@@ -45,7 +45,7 @@
   display: flex;
   gap: 26px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.06em;
 
   a {
@@ -61,7 +61,7 @@
 .eyebrow {
   margin: 0;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.14em;
   color: var(--text-tertiary);
   text-transform: uppercase;
@@ -79,6 +79,7 @@
     font-weight: 700;
   }
 
+  /* Large text (>=32px, 700) so the vivid brand teal clears the 3:1 bar. */
   .accent {
     color: var(--accent);
   }
@@ -101,7 +102,7 @@
 
 .chip {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-body);
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -109,7 +110,7 @@
   background: var(--surface);
 
   .dot {
-    color: var(--accent);
+    color: var(--accent-text);
   }
 }
 
@@ -164,9 +165,9 @@
 .card-kicker {
   margin: 0;
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 12px;
   letter-spacing: 0.12em;
-  color: var(--accent);
+  color: var(--accent-text);
   text-transform: uppercase;
 }
 
@@ -208,7 +209,7 @@
 
 .shipped-stamp {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-faint);
 }
 
@@ -240,7 +241,7 @@
   }
 
   .shipped-stamp {
-    font-size: 10.5px;
+    font-size: 12px;
   }
 }
 
@@ -262,7 +263,7 @@
     gap: 8px;
 
     .chip {
-      font-size: 10.5px;
+      font-size: 12px;
       padding: 5px 12px;
     }
   }
@@ -270,7 +271,7 @@
 
 .preview-tag {
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 12px;
   color: var(--text-faint);
   background: var(--surface);
   border: 1px dashed var(--border-dashed);
@@ -298,7 +299,7 @@
 
 .card-stack {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-tertiary);
   margin: 16px 0 0;
 }
@@ -315,7 +316,7 @@
 .card-cta {
   font-size: 13px;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .about {
@@ -338,7 +339,7 @@
   font-size: 12px;
 
   a {
-    color: var(--accent);
+    color: var(--accent-text);
     text-decoration: none;
 
     &:hover {
@@ -352,7 +353,7 @@
   border-top: 1px solid var(--border);
   padding: 20px 0 0;
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 12px;
   color: var(--text-faint);
   line-height: 1.7;
 
@@ -375,7 +376,7 @@
   top: 12px;
   right: 12px;
   font-family: var(--mono);
-  font-size: 9.5px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-tertiary);
@@ -387,4 +388,28 @@
 
 .card-preview--icon img {
   border-radius: 16px;
+}
+
+/* Available to screen readers and keyboard flow, absent from the layout. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Section headings that read as h2 but keep the eyebrow's visual weight. */
+h2.eyebrow {
+  font-weight: 400;
+}
+
+/* Cards are links; keep the ring outside the rounded border. */
+.project-card:focus-visible,
+.featured-card:focus-visible {
+  outline-offset: 4px;
 }

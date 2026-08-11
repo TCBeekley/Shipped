@@ -4,13 +4,26 @@
   --text: #18181b;
   --text-body: #3f3f46;
   --text-secondary: #52525b;
-  --text-tertiary: #71717a;
-  --text-faint: #a1a1aa;
+  --text-tertiary: #63636c;
+  --text-faint: #6e6e77;
   --border: #e4e4e7;
   --border-soft: #ececee;
   --border-faint: #f1f1f2;
+  /*
+   * Contrast against --bg (#fafafa) / --surface (#fff), WCAG AA needs 4.5:1
+   * for normal text, 3:1 for large text and UI boundaries:
+   *   --text            16.97 / 17.72
+   *   --text-body       10.01 / 10.44
+   *   --text-secondary   7.41 /  7.73
+   *   --text-tertiary    5.87 /  6.12
+   *   --text-faint       4.84 /  5.05
+   *   --accent-text      5.24 /  5.47   (all small text set in the brand teal)
+   *   --accent           3.59 /  3.74   (decoration + large text only: dots,
+   *                                      borders, focus ring, the h1 highlight)
+   */
   --accent: #0d9488;
-  --accent-hover: #0f766e;
+  --accent-text: #0f766e;
+  --accent-hover: #0b6e64;
   --border-dashed: #d4d4d8;
   --stripe: #f4f4f5;
   --preview-bg: #fbfbfc;
@@ -37,5 +50,28 @@ a {
 
   &:hover {
     color: var(--accent-hover);
+  }
+}
+
+/*
+ * Visible keyboard affordance. Hover was previously the only one, so keyboard
+ * users had no way to see where they were. Layered on top of the UA default
+ * rather than replacing it: :focus-visible only fires for keyboard-ish focus,
+ * and anything that does not match still gets the browser's own ring.
+ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
