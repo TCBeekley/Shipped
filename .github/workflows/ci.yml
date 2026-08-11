@@ -1,9 +1,9 @@
 name: CI
 
+# Pushes to main are covered by the release workflow, which reuses this
+# pipeline via workflow_call — a second trigger here would run CI twice.
 on:
   pull_request:
-    branches: [main]
-  push:
     branches: [main]
   workflow_call: # allow the release workflow to reuse this pipeline
 
