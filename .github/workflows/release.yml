@@ -38,12 +38,19 @@ jobs:
         run: |
           base=$(node -p "require('./package.json').version.split('.').slice(0,2).join('.')")
           echo "version=${base}.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+      # Idempotent: a re-run reuses the run number, so skip if this build's
+      # tag already exists rather than failing the release.
       - name: Tag the build
         run: |
+          tag="v${{ steps.version.outputs.version }}"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            echo "$tag already exists, skipping"
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag "v${{ steps.version.outputs.version }}" "$GITHUB_SHA"
-          git push origin "v${{ steps.version.outputs.version }}"
+          git tag "$tag" "$GITHUB_SHA"
+          git push origin "$tag"
 
   deploy:
     runs-on: ubuntu-latest

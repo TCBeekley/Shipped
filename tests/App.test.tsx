@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import App from '../src/App'
-import { renderWithUser } from './fixtures/renderWithUser'
 
 describe('<App />', () => {
   it('renders the hero headline', () => {
-    renderWithUser(<App />)
+    render(<App />)
     expect(
       screen.getByRole('heading', {
         level: 1,
@@ -15,7 +14,7 @@ describe('<App />', () => {
   })
 
   it('features SPT-50 with its App Store CTA and shipped date', () => {
-    renderWithUser(<App />)
+    render(<App />)
     const featured = screen.getByRole('link', { name: /SPT-50/ })
 
     expect(featured).toHaveAttribute('href', '/spt-50')
@@ -25,7 +24,7 @@ describe('<App />', () => {
   })
 
   it('renders a card with a shipped stamp for every project', () => {
-    renderWithUser(<App />)
+    render(<App />)
 
     for (const [title, shipped] of [
       ['Stitch', 'shipped: 2025-08'],
@@ -38,7 +37,7 @@ describe('<App />', () => {
   })
 
   it('links the footer to the shipped repo', () => {
-    renderWithUser(<App />)
+    render(<App />)
     expect(screen.getByRole('link', { name: /source/i })).toHaveAttribute(
       'href',
       'https://github.com/TCBeekley/Shipped',

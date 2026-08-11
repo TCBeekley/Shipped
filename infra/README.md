@@ -6,10 +6,10 @@ Target account: **702895206239** · region: **us-east-1**.
 
 ## Stacks
 
-| Stack                | Status       | Purpose                                                                         |
-| -------------------- | ------------ | ------------------------------------------------------------------------------- |
-| `Shipped-GithubOidc` | **deployed** | IAM role GitHub Actions assumes via OIDC to deploy the SPA. No long-lived keys. |
-| `Shipped-Hosting`    | **deployed** | Private S3 bucket + CloudFront (OAC, SPA routing) that serves the built app.     |
+| Stack                | Purpose                                                                         |
+| -------------------- | ------------------------------------------------------------------------------- |
+| `Shipped-GithubOidc` | IAM role GitHub Actions assumes via OIDC to deploy the SPA. No long-lived keys. |
+| `Shipped-Hosting`    | Private S3 bucket + CloudFront (OAC, SPA routing) that serves the built app.     |
 
 Deployed hosting resources:
 
@@ -22,9 +22,9 @@ Deployed hosting resources:
   the validation record (from `aws acm describe-certificate`) lands in that
   zone.
 
-All four release secrets (`AWS_ROLE_ARN`, `AWS_REGION`, `S3_BUCKET`,
-`CLOUDFRONT_DISTRIBUTION_ID`) are set. The OIDC role's CloudFront permission is
-scoped to distribution `E2YBKNUP3U5WN5`.
+The release workflow reads `AWS_ROLE_ARN`, `AWS_REGION`, `S3_BUCKET`, and
+`CLOUDFRONT_DISTRIBUTION_ID` from repo secrets. The OIDC role's CloudFront
+permission is scoped to distribution `E2YBKNUP3U5WN5`.
 
 Shared names/config live in [`lib/config.ts`](lib/config.ts).
 
@@ -39,7 +39,7 @@ creates the role `shipped-github-actions-deploy`. Trust is scoped to:
 so only the release workflow's manually-approved deploy job can assume it. It
 grants S3 sync to the deploy bucket and CloudFront invalidation.
 
-Role ARN (already set as the `AWS_ROLE_ARN` repo secret):
+Role ARN (the `AWS_ROLE_ARN` repo secret):
 
 ```
 arn:aws:iam::702895206239:role/shipped-github-actions-deploy
@@ -63,4 +63,6 @@ npx cdk deploy Shipped-GithubOidc   # deploy a specific stack
   `distributionId` in [`lib/config.ts`](lib/config.ts) and redeploy both the
   `CLOUDFRONT_DISTRIBUTION_ID` secret and `Shipped-GithubOidc`.
 - The SPA itself is deployed by the app repo's release workflow
-  (`.github/workflows/release.yml`) on `v*.*.*` tags — not from here.
+  (`.github/workflows/release.yml`) on every push to `main` — the release
+  tags the build (`vMAJOR.MINOR.BUILD`) and promotes the CI-built artifact.
+  Not from here.

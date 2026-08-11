@@ -13,7 +13,6 @@ CloudFront.
 ```bash
 nvm use          # or otherwise ensure Node 24
 make setup       # install dependencies + git hooks
-cp .env.example .env.local   # then edit values as needed
 ```
 
 ## Development
@@ -40,8 +39,7 @@ message against Conventional Commits. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Tests live under `tests/`, mirroring `src/`, and run on Vitest with
 `@testing-library/react` (jsdom). Coverage must stay at or above **80%** —
-thresholds are enforced in `vite.config.ts` and in CI. Shared fixtures live in
-`tests/fixtures/`.
+thresholds are enforced in `vite.config.ts` and in CI.
 
 ## Deployment
 
@@ -66,12 +64,12 @@ access uses OIDC (no long-lived keys) via an IAM role defined in
 
 Repo secrets:
 
-| Secret                       | Purpose                               | Status                    |
-| ---------------------------- | ------------------------------------- | ------------------------- |
-| `AWS_ROLE_ARN`               | IAM role assumed via GitHub OIDC      | ✅ set                    |
-| `AWS_REGION`                 | AWS region of the bucket/distribution | ✅ set (`us-east-1`)      |
-| `S3_BUCKET`                  | Target S3 bucket name                 | ✅ set (`shipped-web-…`)  |
-| `CLOUDFRONT_DISTRIBUTION_ID` | CloudFront distribution to invalidate | ✅ set (`E2YBKNUP3U5WN5`) |
+| Secret                       | Purpose                               |
+| ---------------------------- | ------------------------------------- |
+| `AWS_ROLE_ARN`               | IAM role assumed via GitHub OIDC      |
+| `AWS_REGION`                 | AWS region of the bucket/distribution |
+| `S3_BUCKET`                  | Target S3 bucket name                 |
+| `CLOUDFRONT_DISTRIBUTION_ID` | CloudFront distribution to invalidate |
 
 To cut a release: merge to `main`, then approve the pending `production`
 deployment in the Actions run.
