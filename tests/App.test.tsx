@@ -42,6 +42,18 @@ describe('<App />', () => {
     expect(screen.getAllByText('case study soon')).toHaveLength(5)
   })
 
+  it('points the about links at real destinations', () => {
+    render(<App />)
+
+    for (const [name, href] of [
+      [/github/i, 'https://github.com/TCBeekley'],
+      [/linkedin/i, 'https://www.linkedin.com/in/tim-beekley/'],
+      [/email/i, 'mailto:tim@beekley.engineering'],
+    ] as const) {
+      expect(screen.getByRole('link', { name })).toHaveAttribute('href', href)
+    }
+  })
+
   it('links the footer to the shipped repo', () => {
     render(<App />)
     expect(screen.getByRole('link', { name: /source/i })).toHaveAttribute(
