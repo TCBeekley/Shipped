@@ -53,6 +53,37 @@ async function ogCard() {
     .toFile(out('public/og-card.png'))
 }
 
+/**
+ * NCHSAA bracket screenshots. Captured at 3072px wide; the page renders them
+ * at container width, so emit 1x/2x for the figure and a small card preview.
+ */
+async function nchsaaShots() {
+  const shots = [
+    ['bracket-source-dark.png', 'bracket-dark'],
+    ['bracket-source-light.png', 'bracket-light'],
+  ]
+
+  for (const [source, name] of shots) {
+    // WebP only: a PNG fallback for a 3072px screenshot costs ~500 KB to
+    // serve browsers that have all supported WebP since 2020. The app icon
+    // keeps its PNG fallback because there it is a rounding error.
+    for (const width of [1100, 2200]) {
+      await sharp(out(`src/assets/nchsaa/${source}`))
+        .resize({ width })
+        .webp({ quality: 80 })
+        .toFile(out(`src/assets/nchsaa/${name}-${width}.webp`))
+    }
+  }
+
+  // Card preview: the top-left of the bracket, cropped to the tile's aspect.
+  await sharp(out('src/assets/nchsaa/bracket-source-dark.png'))
+    .extract({ left: 0, top: 0, width: 1600, height: 800 })
+    .resize({ width: 720 })
+    .webp({ quality: 80 })
+    .toFile(out('src/assets/nchsaa/bracket-card.webp'))
+}
+
 await appIcon()
 await ogCard()
-console.log('Regenerated app icon variants and the og card.')
+await nchsaaShots()
+console.log('Regenerated app icon variants, the og card, and NCHSAA shots.')

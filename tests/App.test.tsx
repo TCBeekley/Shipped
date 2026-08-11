@@ -28,6 +28,7 @@ describe('<App />', () => {
     render(<App />)
 
     for (const [title, shipped] of [
+      ['NCHSAA Bracket Projector', 'shipped: 2026-05'],
       ['CPAP Tracker', 'shipped: 2026-08'],
       ['Stitch', 'shipped: 2025-08'],
       ['Transfer Tracker', 'shipped: 2025-01'],
@@ -53,6 +54,14 @@ describe('<App />', () => {
     ] as const) {
       expect(screen.getByRole('link', { name })).toHaveAttribute('href', href)
     }
+  })
+
+  it('links the live projector to its case study', () => {
+    render(<App />)
+    const card = screen.getByRole('link', { name: /NCHSAA Bracket Projector/ })
+
+    expect(card).toHaveAttribute('href', '/nchsaa-seeding.html')
+    expect(card).not.toHaveTextContent(/case study soon/i)
   })
 
   it('links Transfer Tracker to its published case study', () => {
