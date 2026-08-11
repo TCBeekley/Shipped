@@ -221,7 +221,9 @@
 .project-grid {
   padding: 40px 0 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  /* min() so the track can never exceed the container: below ~354px the
+     290px floor would otherwise force a horizontal scrollbar. */
+  grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
   gap: 20px;
 }
 
@@ -430,4 +432,27 @@ h2.eyebrow {
   height: 100%;
   object-fit: cover;
   object-position: top left;
+}
+
+@media (max-width: 640px) {
+  /* 32px of gutter on each side is a sixth of a 375px screen. */
+  .container {
+    padding: 0 20px;
+  }
+
+  .hero {
+    padding: 52px 0 0;
+  }
+
+  .featured-art {
+    min-height: 190px;
+  }
+
+  .featured-body {
+    padding: 26px 24px;
+  }
+
+  .card-body {
+    padding: 20px 22px 22px;
+  }
 }
