@@ -83,7 +83,23 @@ async function nchsaaShots() {
     .toFile(out('src/assets/nchsaa/bracket-card.webp'))
 }
 
+/** CPAP Supply Board captures: same treatment as the NCHSAA shots. */
+async function cpapShots() {
+  for (const [source, name] of [
+    ['board-source-dark.png', 'board-dark'],
+    ['board-source-light.png', 'board-light'],
+  ]) {
+    for (const width of [1100, 2200]) {
+      await sharp(out(`src/assets/cpap/${source}`))
+        .resize({ width })
+        .webp({ quality: 80 })
+        .toFile(out(`src/assets/cpap/${name}-${width}.webp`))
+    }
+  }
+}
+
 await appIcon()
 await ogCard()
 await nchsaaShots()
-console.log('Regenerated app icon variants, the og card, and NCHSAA shots.')
+await cpapShots()
+console.log('Regenerated app icon variants, the og card, and app screenshots.')

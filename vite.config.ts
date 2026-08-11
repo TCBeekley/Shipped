@@ -21,6 +21,7 @@ export default defineConfig({
         main: resolve(import.meta.dirname, 'index.html'),
         transferTracker: resolve(import.meta.dirname, 'transfer-tracker.html'),
         nchsaaSeeding: resolve(import.meta.dirname, 'nchsaa-seeding.html'),
+        cpapTracker: resolve(import.meta.dirname, 'cpap-tracker.html'),
       },
     },
   },

@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="CPAP Tracker — an offline-first macOS menu-bar app for replacement schedules: calendar-aware date math, a versioned local JSON store, no accounts and no network calls."
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#fafafa"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#18181b"
+    />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="CPAP Tracker — case study" />
+    <meta
+      property="og:description"
+      content="An offline-first macOS menu-bar app for replacement schedules: calendar-aware date math, a versioned local JSON store, no accounts and no network calls."
+    />
+    <meta
+      property="og:url"
+      content="https://shipped.beekley.dev/cpap-tracker.html"
+    />
+    <meta
+      property="og:image"
+      content="https://shipped.beekley.dev/og-card.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="shipped: apps people use, systems that stay up. shipped.beekley.dev — web, iOS, infrastructure."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="canonical"
+      href="https://shipped.beekley.dev/cpap-tracker.html"
+    />
+    <link rel="stylesheet" href="/src/index.css" />
+    <link rel="stylesheet" href="/src/pages/case-study.css" />
+    <title>CPAP Tracker — shipped.beekley.dev</title>
+  </head>
+  <body>
+    <div class="page">
+      <div class="container">
+        <header class="site-header">
+          <a href="/" class="wordmark">
+            shipped<span class="wordmark-dot">.</span
+            ><span class="wordmark-domain">beekley.dev</span>
+          </a>
+          <nav class="site-nav" aria-label="Site">
+            <a href="/#projects">projects</a>
+            <a href="/#about">about</a>
+            <a href="mailto:tim@beekley.engineering">contact</a>
+          </nav>
+        </header>
+
+        <main>
+          <article class="case">
+            <p class="eyebrow">Case study · macOS app</p>
+            <h1 class="case-title">CPAP Tracker</h1>
+            <p class="case-lede">
+              CPAP equipment has to be replaced on a schedule — filters monthly,
+              cushions every few weeks, tubing and headgear a few times a year.
+              Miss it and therapy quietly gets worse. This is a menu-bar app
+              that keeps the schedule, with all of the data on your own machine
+              and none of it anywhere else.
+            </p>
+
+            <ul class="chip-row case-chips">
+              <li class="chip">
+                <span class="dot" aria-hidden="true">●</span>&nbsp; offline only
+              </li>
+              <li class="chip">SwiftUI · macOS 14+</li>
+              <li class="chip">shipped: 2026-08</li>
+            </ul>
+
+            <aside class="callout" aria-labelledby="privacy-heading">
+              <h2 id="privacy-heading" class="callout-title">
+                No accounts, no cloud, no telemetry
+              </h2>
+              <p>
+                The app makes no network calls at all. Everything lives in one
+                human-readable JSON file under Application Support, which is
+                also the export format — so the backup is the same thing as the
+                database, and you can read it in any text editor. Health
+                adjacent data has no business leaving the machine for a problem
+                this small.
+              </p>
+            </aside>
+
+            <figure class="shot">
+              <picture>
+                <source
+                  media="(prefers-color-scheme: dark)"
+                  type="image/webp"
+                  srcset="
+                    /src/assets/cpap/board-dark-1100.webp 1x,
+                    /src/assets/cpap/board-dark-2200.webp 2x
+                  "
+                />
+                <img
+                  src="/src/assets/cpap/board-light-1100.webp"
+                  srcset="
+                    /src/assets/cpap/board-light-1100.webp 1x,
+                    /src/assets/cpap/board-light-2200.webp 2x
+                  "
+                  width="1100"
+                  height="855"
+                  loading="lazy"
+                  decoding="async"
+                  alt="The Supply Board: a summary strip showing the next date supplies are due, how many items fall on it, and how many are overdue, above a months-long timeline; below that, one card per batch of components sharing a due date, each with a single mark-all-replaced action."
+                />
+              </picture>
+              <figcaption>
+                The Supply Board. Components that come due together are grouped
+                into one batch with one primary action; per-row replacement
+                stays deliberately quiet. Light and dark ship together — this
+                figure follows your system setting.
+              </figcaption>
+            </figure>
+
+            <h2>Dates are the hard part</h2>
+            <p>
+              "Every month" sounds trivial until the month is February. If you
+              replace a filter on 31 January, the next one is due 28 February —
+              and the one after that should be 31 March, not 28 March. Naïve
+              date arithmetic loses that day permanently, and each short month
+              walks the whole schedule earlier.
+            </p>
+            <p>
+              Every component keeps an anchor day, so clamping into a short
+              month is temporary rather than a permanent drift. All arithmetic
+              runs on a civil-date type — year, month, day, no time zone — so
+              "overdue" flips at local midnight and can't shift because
+              somebody's clock is UTC-relative. It's the kind of correctness
+              that is invisible when it works and maddening when it doesn't,
+              which is why the scheduling rules are the most heavily tested part
+              of the codebase.
+            </p>
+
+            <h2>Being late is the normal case</h2>
+            <p>
+              A tracker that assumes you replace things on time is a tracker
+              that is wrong most of the time. When you mark something replaced
+              after its due date, the app asks what you meant, with real dates
+              on every option: start the next interval from today, keep the
+              original cadence, or line this component back up with the batch it
+              belongs to. You can also enter the actual date if you replaced it
+              last Tuesday and are only now saying so.
+            </p>
+            <p>
+              Whichever you pick is remembered as that component's default, and
+              recorded on the replacement event itself — so a year later the
+              history can explain why a date moved, instead of presenting an
+              unexplained jump.
+            </p>
+
+            <h2>Not losing data</h2>
+            <ul class="plain-list">
+              <li>
+                Writes are atomic, so an interrupted save can't leave a
+                half-written file.
+              </li>
+              <li>
+                The store is versioned. An older file migrates
+                non-destructively; a file from a <em>newer</em> version refuses
+                to open rather than risk silently discarding fields it doesn't
+                understand.
+              </li>
+              <li>
+                Deleting a component keeps its replacement history. Retiring is
+                the ordinary way to hide something you no longer use.
+              </li>
+              <li>
+                Components with genuinely unknown history are stored as unknown.
+                The app never invents a replacement date to make the UI look
+                complete.
+              </li>
+            </ul>
+
+            <h2>Decisions worth naming</h2>
+            <dl class="decisions">
+              <dt>The due date is stored, not computed</dt>
+              <dd>
+                It would be tidier to derive the next due date from the last
+                replacement plus the interval. But then any correction to
+                history silently rewrites the future. The due date is its own
+                stored fact; when it disagrees with the arithmetic, the app
+                points that out and lets you decide, rather than quietly fixing
+                itself behind your back.
+              </dd>
+
+              <dt>Batches, because that's how supplies arrive</dt>
+              <dd>
+                Components that come due together are grouped, with a single
+                "mark all replaced" as the primary action and per-row
+                replacement kept deliberately quiet. When items drift apart, the
+                app suggests the alignment date that moves the fewest of them.
+              </dd>
+
+              <dt>Urgency in weight, not colour</dt>
+              <dd>
+                The one batch that needs action wears a solid field; everything
+                calm stays a line drawing. Nothing depends on a red-versus-green
+                distinction to be legible.
+              </dd>
+
+              <dt>Logic split from the interface</dt>
+              <dd>
+                Models, the civil-date type, the scheduler, and the store live
+                in a core module that imports no UI at all, which is what makes
+                the scheduling rules exhaustively testable without launching an
+                app.
+              </dd>
+            </dl>
+
+            <h2>Stack</h2>
+            <p class="stack-line">
+              Swift · SwiftUI · Codable · Swift Package Manager · XCTest ·
+              SMAppService (launch at login) · UserNotifications
+            </p>
+            <p>
+              Runs as a menu-bar extra with optional local notifications,
+              configurable lead times, and rate-limited overdue reminders.
+              Notification permission is requested at the first meaningful
+              interaction rather than on a cold start, and a denial degrades to
+              an in-app banner instead of a dead feature.
+            </p>
+
+            <p class="case-footer-links">
+              <a href="https://github.com/TCBeekley/cpap-supplies-tracking"
+                >repository <span aria-hidden="true">↗</span></a
+              >
+              <a href="/#projects">back to projects</a>
+            </p>
+          </article>
+        </main>
+
+        <footer class="site-footer">
+          shipped.beekley.dev &nbsp;·&nbsp; web · iOS · infra &nbsp;·&nbsp;
+          evidence over claims, done over described &nbsp;·&nbsp;
+          <a href="https://github.com/TCBeekley/Shipped">source ↗</a>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>
