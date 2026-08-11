@@ -163,7 +163,7 @@ function App() {
           </section>
 
           <section id="projects" className="featured">
-            <p className="eyebrow">Featured · on the App Store</p>
+            <h2 className="eyebrow">Featured · on the App Store</h2>
             <a href="/spt-50" className="featured-card">
               <div className="featured-art">
                 <span className="soon-badge">case study soon</span>
@@ -176,7 +176,7 @@ function App() {
               </div>
               <div className="featured-body">
                 <p className="card-kicker">Game · iOS · Swift</p>
-                <h2 className="featured-title">SPT-50</h2>
+                <h3 className="featured-title">SPT-50</h3>
                 <p className="card-pitch">
                   A modern take on the license-plate game. Spot all fifty on the
                   road — see America one plate at a time.
@@ -192,18 +192,21 @@ function App() {
             </a>
           </section>
 
-          <section className="project-grid">
+          <section className="project-grid" aria-labelledby="more-projects">
+            <h2 id="more-projects" className="visually-hidden">
+              More projects
+            </h2>
             {projects.map((project) => (
               <ProjectCard key={project.title} {...project} />
             ))}
           </section>
 
           <section id="about" className="about">
-            <p className="eyebrow">About</p>
+            <h2 className="eyebrow">About</h2>
             <p className="about-copy">
-              Beekley — engineer. I build the whole thing: the interface, the
-              API behind it, and the infrastructure underneath. This site is the
-              résumé; every entry above is live.
+              Tim Beekley — engineer. I build the whole thing: the interface,
+              the API behind it, and the infrastructure underneath. This site is
+              the résumé; every entry above is live.
             </p>
             <div className="about-links">
               <a href="https://github.com/TCBeekley">

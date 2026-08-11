@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
+import { axe } from 'vitest-axe'
 import App from '../src/App'
 
 describe('<App />', () => {
@@ -60,5 +61,38 @@ describe('<App />', () => {
       'href',
       'https://github.com/TCBeekley/Shipped',
     )
+  })
+
+  it('has no detectable accessibility violations', async () => {
+    const { container } = render(<App />)
+    expect(await axe(container)).toHaveNoViolations()
+  })
+
+  it('exposes one h1 and a heading for every section', () => {
+    render(<App />)
+
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+    for (const name of [/featured/i, /more projects/i, /about/i]) {
+      expect(
+        screen.getByRole('heading', { level: 2, name }),
+      ).toBeInTheDocument()
+    }
+    // Project titles sit one level below their section heading.
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'SPT-50' }),
+    ).toBeInTheDocument()
+  })
+
+  it('exposes banner, navigation, main, and contentinfo landmarks', () => {
+    render(<App />)
+
+    expect(screen.getByRole('banner')).toBeInTheDocument()
+    expect(screen.getByRole('main')).toBeInTheDocument()
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('banner')).getByRole('navigation', {
+        name: /site/i,
+      }),
+    ).toBeInTheDocument()
   })
 })
