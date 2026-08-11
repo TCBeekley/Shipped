@@ -28,6 +28,7 @@ const projects: Project[] = [
     preview: (
       <div className="card-preview">
         <span className="preview-tag">live app preview</span>
+        <span className="soon-badge">case study soon</span>
       </div>
     ),
   },
@@ -43,6 +44,7 @@ const projects: Project[] = [
     preview: (
       <div className="card-preview">
         <span className="preview-tag">metabase dashboard</span>
+        <span className="soon-badge">case study soon</span>
       </div>
     ),
   },
@@ -67,6 +69,7 @@ const projects: Project[] = [
           <span className="chip">4 regions</span>
           <span className="chip">no hot standby</span>
         </div>
+        <span className="soon-badge">case study soon</span>
       </div>
     ),
   },
@@ -146,6 +149,7 @@ function App() {
             <p className="eyebrow">Featured · on the App Store</p>
             <a href="/spt-50" className="featured-card">
               <div className="featured-art">
+                <span className="soon-badge">case study soon</span>
                 <img
                   src={spt50Icon}
                   alt="SPT-50 app icon"

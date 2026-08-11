@@ -36,6 +36,11 @@ describe('<App />', () => {
     }
   })
 
+  it('labels every card as a pending case study', () => {
+    render(<App />)
+    expect(screen.getAllByText('case study soon')).toHaveLength(4)
+  })
+
   it('links the footer to the shipped repo', () => {
     render(<App />)
     expect(screen.getByRole('link', { name: /source/i })).toHaveAttribute(
