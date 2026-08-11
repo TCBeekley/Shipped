@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Transfer Tracker — a scheduled capture pipeline for the D1 baseball transfer portal: immutable dated snapshots in S3, Parquet for analytics, change tracking in SQL, about a dollar a month."
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#fafafa"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#18181b"
+    />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Transfer Tracker — capture pipeline" />
+    <meta
+      property="og:description"
+      content="Scheduled capture of the D1 baseball transfer portal: immutable dated snapshots, Parquet for analytics, change tracking in SQL, about a dollar a month."
+    />
+    <meta
+      property="og:url"
+      content="https://shipped.beekley.dev/transfer-tracker.html"
+    />
+    <meta
+      property="og:image"
+      content="https://shipped.beekley.dev/og-card.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="shipped: apps people use, systems that stay up. shipped.beekley.dev — web, iOS, infrastructure."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="canonical"
+      href="https://shipped.beekley.dev/transfer-tracker.html"
+    />
+    <link rel="stylesheet" href="/src/index.css" />
+    <link rel="stylesheet" href="/src/pages/case-study.css" />
+    <title>Transfer Tracker — shipped.beekley.dev</title>
+  </head>
+  <body>
+    <div class="page">
+      <div class="container">
+        <header class="site-header">
+          <a href="/" class="wordmark">
+            shipped<span class="wordmark-dot">.</span
+            ><span class="wordmark-domain">beekley.dev</span>
+          </a>
+          <nav class="site-nav" aria-label="Site">
+            <a href="/#projects">projects</a>
+            <a href="/#about">about</a>
+            <a href="mailto:tim@beekley.engineering">contact</a>
+          </nav>
+        </header>
+
+        <main>
+          <article class="case">
+            <p class="eyebrow">Case study · data pipeline</p>
+            <h1 class="case-title">Transfer Tracker</h1>
+            <p class="case-lede">
+              The D1 baseball transfer portal is a web page that changes several
+              times a day and keeps no history. This captures it on a schedule,
+              stores every version, and turns "what changed" into a SQL question
+              — for about a dollar a month.
+            </p>
+
+            <ul class="chip-row case-chips">
+              <li class="chip">
+                <span class="dot" aria-hidden="true">●</span>&nbsp; ~$1/mo all
+                in
+              </li>
+              <li class="chip">Python · AWS · DuckDB</li>
+              <li class="chip">shipped: 2025-01</li>
+            </ul>
+
+            <aside class="callout" aria-labelledby="status-heading">
+              <h2 id="status-heading" class="callout-title">
+                What you can and cannot click
+              </h2>
+              <p>
+                The capture pipeline runs in AWS on a schedule — that part is
+                live. The dashboards on top of it run in Metabase in Docker on
+                my laptop, so there is no public URL to hand you. This page is
+                the artifact instead: the design, the decisions, and what they
+                cost.
+              </p>
+            </aside>
+
+            <h2>What it captures</h2>
+            <p>
+              A single authenticated page listing every player currently in the
+              portal — where they came from, where they landed, and whether they
+              have landed anywhere yet. The source publishes the
+              <em>current</em> state and nothing else: no API, no history, no
+              record of yesterday. Refresh it and the previous answer is gone.
+            </p>
+            <p>
+              Almost every interesting question is about change over time. Who
+              committed this week? How long does the median player sit
+              uncommitted? Which conferences are net importers? None of that is
+              answerable from a page that only knows about right now — so the
+              first job is simply to remember.
+            </p>
+
+            <h2>How it works</h2>
+            <ol class="pipeline">
+              <li class="stage">
+                <span class="stage-label">Scheduler</span>
+                <p class="stage-detail">
+                  EventBridge fires a cron expression a few times a day.
+                </p>
+              </li>
+              <li class="stage">
+                <span class="stage-label">Lambda</span>
+                <p class="stage-detail">
+                  Authenticates, pulls the table, parses it, writes both storage
+                  zones. Credentials live in SSM; the session is established per
+                  run rather than stored.
+                </p>
+              </li>
+              <li class="stage">
+                <span class="stage-label">S3 · raw</span>
+                <p class="stage-detail">
+                  The untouched response, timestamped and never edited. This
+                  zone <em>is</em> the history.
+                </p>
+                <code class="stage-path">raw/dt=YYYY-MM-DD/HHMMSS.json</code>
+              </li>
+              <li class="stage">
+                <span class="stage-label">S3 · curated</span>
+                <p class="stage-detail">
+                  The same run, parsed and typed into Parquet, partitioned by
+                  snapshot date.
+                </p>
+                <code class="stage-path"
+                  >curated/snapshots/dt=YYYY-MM-DD/data.parquet</code
+                >
+              </li>
+              <li class="stage">
+                <span class="stage-label">Query</span>
+                <p class="stage-detail">
+                  DuckDB locally, Athena in the cloud — both read the Parquet
+                  directly, joined at query time against hand-maintained
+                  reference tables for conference and school metadata.
+                </p>
+              </li>
+              <li class="stage">
+                <span class="stage-label">Dashboards</span>
+                <p class="stage-detail">
+                  Metabase, for click-to-build charts over the query layer.
+                </p>
+              </li>
+            </ol>
+
+            <h2>Decisions that mattered</h2>
+            <dl class="decisions">
+              <dt>Store whole snapshots; compute diffs in SQL</dt>
+              <dd>
+                The scraper never decides what changed. It writes the full table
+                every run and stops. "What changed" becomes a window function —
+                <code>LAG()</code> over destination, partitioned by player,
+                ordered by date — which means I can ask a new question of two
+                years of history without ever re-scraping. Snapshots are a few
+                thousand rows; keeping all of them is cheaper than being clever.
+              </dd>
+
+              <dt>Files in S3, not a database</dt>
+              <dd>
+                The data is tiny and changes slowly. An always-on Postgres would
+                have cost more per month than the entire rest of the system, to
+                serve queries I run a handful of times a week.
+              </dd>
+
+              <dt>Enrich with a join, never in the raw data</dt>
+              <dd>
+                Conference, state, and school names are reference tables joined
+                at read time on the team slug — not fields written into the
+                captured record. The capture stays a faithful copy of what the
+                source said; reference data can be corrected later without
+                rewriting history. A <code>LEFT JOIN</code> means an unknown
+                school still shows up, and
+                <code>WHERE conference IS NULL</code> doubles as the maintenance
+                to-do list.
+              </dd>
+
+              <dt>Join on the slug, not the display name</dt>
+              <dd>
+                The source already carries a stable identifier. Matching on it
+                avoids an entire category of fuzzy-string bugs that would
+                otherwise surface as quietly wrong conference totals.
+              </dd>
+
+              <dt>No headless browser</dt>
+              <dd>
+                The payload is one authenticated request. Driving a real browser
+                would have meant more moving parts, more memory, and more to
+                break, for no additional data.
+              </dd>
+            </dl>
+
+            <h2>What it costs</h2>
+            <p>
+              Storage is pennies, the scheduler is negligible, and the function
+              runs comfortably inside the Lambda free tier. The design target
+              was zero to one dollar a month, and the architecture is shaped
+              around that constraint more than any other: it is the reason there
+              is no database, no crawler, and no always-on anything.
+            </p>
+
+            <h2>Stack</h2>
+            <p class="stack-line">
+              Python · AWS Lambda · EventBridge Scheduler · S3 · Parquet ·
+              Athena · DuckDB · Metabase · AWS CDK · GitHub Actions (OIDC)
+            </p>
+            <p>
+              Infrastructure and function code deploy together as one CDK asset,
+              from <code>main</code>, with no stored AWS keys. Tests and lint
+              gate every pull request, and the parser is tested against a
+              scrubbed fixture so the suite never depends on the live source.
+            </p>
+
+            <p class="case-footer-links">
+              <a href="https://github.com/TCBeekley/TransferTracker"
+                >repository <span aria-hidden="true">↗</span></a
+              >
+              <a href="/#projects">back to projects</a>
+            </p>
+          </article>
+        </main>
+
+        <footer class="site-footer">
+          shipped.beekley.dev &nbsp;·&nbsp; web · iOS · infra &nbsp;·&nbsp;
+          evidence over claims, done over described &nbsp;·&nbsp;
+          <a href="https://github.com/TCBeekley/Shipped">source ↗</a>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>
