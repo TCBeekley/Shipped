@@ -54,77 +54,65 @@ describe('HostingStack', () => {
   })
 
   test('sets HSTS for two years, subdomains included, preload off', () => {
-    template.hasResourceProperties(
-      'AWS::CloudFront::ResponseHeadersPolicy',
-      {
-        ResponseHeadersPolicyConfig: Match.objectLike({
-          SecurityHeadersConfig: Match.objectLike({
-            StrictTransportSecurity: {
-              AccessControlMaxAgeSec: 63072000,
-              IncludeSubdomains: true,
-              Preload: false,
-              Override: true,
-            },
-          }),
+    template.hasResourceProperties('AWS::CloudFront::ResponseHeadersPolicy', {
+      ResponseHeadersPolicyConfig: Match.objectLike({
+        SecurityHeadersConfig: Match.objectLike({
+          StrictTransportSecurity: {
+            AccessControlMaxAgeSec: 63072000,
+            IncludeSubdomains: true,
+            Preload: false,
+            Override: true,
+          },
         }),
-      },
-    )
+      }),
+    })
   })
 
   test('sets nosniff, DENY framing, and a strict referrer policy', () => {
-    template.hasResourceProperties(
-      'AWS::CloudFront::ResponseHeadersPolicy',
-      {
-        ResponseHeadersPolicyConfig: Match.objectLike({
-          SecurityHeadersConfig: Match.objectLike({
-            ContentTypeOptions: { Override: true },
-            FrameOptions: { FrameOption: 'DENY', Override: true },
-            ReferrerPolicy: {
-              ReferrerPolicy: 'strict-origin-when-cross-origin',
-              Override: true,
-            },
-          }),
+    template.hasResourceProperties('AWS::CloudFront::ResponseHeadersPolicy', {
+      ResponseHeadersPolicyConfig: Match.objectLike({
+        SecurityHeadersConfig: Match.objectLike({
+          ContentTypeOptions: { Override: true },
+          FrameOptions: { FrameOption: 'DENY', Override: true },
+          ReferrerPolicy: {
+            ReferrerPolicy: 'strict-origin-when-cross-origin',
+            Override: true,
+          },
         }),
-      },
-    )
+      }),
+    })
   })
 
   test('locks the CSP down to same-origin script, style, and data images', () => {
-    template.hasResourceProperties(
-      'AWS::CloudFront::ResponseHeadersPolicy',
-      {
-        ResponseHeadersPolicyConfig: Match.objectLike({
-          SecurityHeadersConfig: Match.objectLike({
-            ContentSecurityPolicy: {
-              ContentSecurityPolicy:
-                "default-src 'self'; script-src 'self'; style-src 'self'; " +
-                "img-src 'self' data:; object-src 'none'; base-uri 'self'; " +
-                "form-action 'none'; frame-ancestors 'none'",
-              Override: true,
-            },
-          }),
+    template.hasResourceProperties('AWS::CloudFront::ResponseHeadersPolicy', {
+      ResponseHeadersPolicyConfig: Match.objectLike({
+        SecurityHeadersConfig: Match.objectLike({
+          ContentSecurityPolicy: {
+            ContentSecurityPolicy:
+              "default-src 'self'; script-src 'self'; style-src 'self'; " +
+              "img-src 'self' data:; object-src 'none'; base-uri 'self'; " +
+              "form-action 'none'; frame-ancestors 'none'",
+            Override: true,
+          },
         }),
-      },
-    )
+      }),
+    })
   })
 
   test('denies sensitive browser features via Permissions-Policy', () => {
-    template.hasResourceProperties(
-      'AWS::CloudFront::ResponseHeadersPolicy',
-      {
-        ResponseHeadersPolicyConfig: Match.objectLike({
-          CustomHeadersConfig: {
-            Items: Match.arrayWith([
-              Match.objectLike({
-                Header: 'Permissions-Policy',
-                Value: Match.stringLikeRegexp('camera=\\(\\)'),
-                Override: true,
-              }),
-            ]),
-          },
-        }),
-      },
-    )
+    template.hasResourceProperties('AWS::CloudFront::ResponseHeadersPolicy', {
+      ResponseHeadersPolicyConfig: Match.objectLike({
+        CustomHeadersConfig: {
+          Items: Match.arrayWith([
+            Match.objectLike({
+              Header: 'Permissions-Policy',
+              Value: Match.stringLikeRegexp('camera=\\(\\)'),
+              Override: true,
+            }),
+          ]),
+        },
+      }),
+    })
   })
 
   test('rewrites 403/404 to index.html for SPA routing', () => {
