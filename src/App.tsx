@@ -1,5 +1,10 @@
 import type { ReactNode } from 'react'
-import spt50Icon from './assets/spt50-icon.png'
+import spt50Icon140 from './assets/spt50-icon-140.png'
+import spt50Icon280 from './assets/spt50-icon-280.png'
+import spt50Icon420 from './assets/spt50-icon-420.png'
+import spt50Icon140Webp from './assets/spt50-icon-140.webp'
+import spt50Icon280Webp from './assets/spt50-icon-280.webp'
+import spt50Icon420Webp from './assets/spt50-icon-420.webp'
 import cpapIcon from './assets/cpap-icon.svg'
 import './App.css'
 
@@ -167,12 +172,25 @@ function App() {
             <a href="/spt-50" className="featured-card">
               <div className="featured-art">
                 <span className="soon-badge">case study soon</span>
-                <img
-                  src={spt50Icon}
-                  alt="SPT-50 app icon"
-                  width="140"
-                  height="140"
-                />
+                {/*
+                  Above the fold, so never lazy-loaded. Fixed 140px box with
+                  1x/2x/3x sources; WebP first, PNG for anything that cannot
+                  take it. Explicit width/height reserve the space.
+                */}
+                <picture>
+                  <source
+                    type="image/webp"
+                    srcSet={`${spt50Icon140Webp} 1x, ${spt50Icon280Webp} 2x, ${spt50Icon420Webp} 3x`}
+                  />
+                  <img
+                    src={spt50Icon140}
+                    srcSet={`${spt50Icon140} 1x, ${spt50Icon280} 2x, ${spt50Icon420} 3x`}
+                    alt="SPT-50 app icon"
+                    width="140"
+                    height="140"
+                    decoding="async"
+                  />
+                </picture>
               </div>
               <div className="featured-body">
                 <p className="card-kicker">Game · iOS · Swift</p>
