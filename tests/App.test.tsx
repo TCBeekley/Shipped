@@ -9,7 +9,7 @@ describe('<App />', () => {
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: /shipped: apps people use, systems that stay up/i,
+        name: /shipped: apps people use, systems that stay up, proof you can click/i,
       }),
     ).toBeInTheDocument()
   })
