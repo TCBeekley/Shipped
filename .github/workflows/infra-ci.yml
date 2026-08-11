@@ -35,5 +35,11 @@ jobs:
         run: npm run build
       - name: Test
         run: npm test
+      # Templates synth without credentials, but the stacks resolve their
+      # account from the environment (see infra/lib/config.ts) and fail loudly
+      # when it is absent. Supply the documentation-only id the unit tests use,
+      # so CI validates structure without depending on a real account.
       - name: Synth (no AWS credentials needed)
+        env:
+          CDK_DEPLOY_ACCOUNT: '123456789012'
         run: npx cdk synth --quiet
