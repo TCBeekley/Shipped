@@ -45,16 +45,23 @@ thresholds are enforced in `vite.config.ts` and in CI. Shared fixtures live in
 
 ## Deployment
 
-Deploys run on version tags (`vX.Y.Z`) via `.github/workflows/release.yml`:
+Every push to `main` is a release candidate, versioned `MAJOR.MINOR.BUILD`
+(semver with the patch position as a build number). Via
+`.github/workflows/release.yml`:
 
-1. Runs the full CI pipeline (lint, typecheck, test, build).
-2. Deploys the exact `dist` artifact that pipeline built and tested — the
+1. Runs the full CI pipeline (lint, typecheck, test, build) — one artifact.
+2. Tags the build `vMAJOR.MINOR.BUILD`: `MAJOR.MINOR` from `package.json`'s
+   `version` (bump it deliberately for feature/breaking releases), build
+   number from the workflow run number, so every build is uniquely versioned.
+3. Deploys the exact `dist` artifact that pipeline built and tested — the
    deploy job downloads it and `aws s3 sync`s it to the target bucket; it
-   never rebuilds (build once, deploy everywhere).
-3. Creates a CloudFront invalidation so the new build is served immediately.
+   never rebuilds (build once, deploy everywhere). Future environments become
+   additional deploy jobs promoting the same artifact.
+4. Creates a CloudFront invalidation so the new build is served immediately.
 
-The deploy job uses the `production` GitHub Environment and requires manual
-approval. AWS access uses OIDC (no long-lived keys) via an IAM role defined in
+The tag marks the build; deployment is decided separately — the deploy job
+uses the `production` GitHub Environment and requires manual approval. AWS
+access uses OIDC (no long-lived keys) via an IAM role defined in
 [`infra/`](infra/README.md).
 
 Repo secrets:
@@ -66,12 +73,8 @@ Repo secrets:
 | `S3_BUCKET`                  | Target S3 bucket name                 | ✅ set (`shipped-web-…`)  |
 | `CLOUDFRONT_DISTRIBUTION_ID` | CloudFront distribution to invalidate | ✅ set (`E2YBKNUP3U5WN5`) |
 
-To cut a release:
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
+To cut a release: merge to `main`, then approve the pending `production`
+deployment in the Actions run.
 
 ## Infrastructure
 
