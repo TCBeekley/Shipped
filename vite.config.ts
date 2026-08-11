@@ -13,6 +13,8 @@ export default defineConfig({
     // to avoid — and base64 inflates them ~33% on the way in. Emitting real
     // files also keeps them content-hashed and independently cacheable.
     assetsInlineLimit: 0,
+    // scripts/prerender.mjs maps source asset paths to their hashed output.
+    manifest: true,
     rollupOptions: {
       // Multi-page: the home page is the React app; case studies are plain
       // HTML entries that ship no JavaScript at all. Each is a real document,
