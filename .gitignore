@@ -29,3 +29,6 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# CDK synth output (contains the resolved AWS account id)
+cdk.out/
