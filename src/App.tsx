@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react'
-import spt50Icon140 from './assets/spt50-icon-140.png'
-import spt50Icon280 from './assets/spt50-icon-280.png'
-import spt50Icon420 from './assets/spt50-icon-420.png'
-import spt50Icon140Webp from './assets/spt50-icon-140.webp'
-import spt50Icon280Webp from './assets/spt50-icon-280.webp'
-import spt50Icon420Webp from './assets/spt50-icon-420.webp'
-import cpapIcon from './assets/cpap-icon.svg'
-import nchsaaCard from './assets/nchsaa/bracket-card.webp'
+
+/*
+ * Home-page images live in public/ and are referenced by URL rather than
+ * imported. The page is prerendered and ships no JavaScript, so there is no
+ * client module graph for a bundler import to be emitted from. Case-study
+ * pages still import theirs through HTML, where Vite content-hashes them.
+ */
+const IMG = '/img'
 import './App.css'
 
 const REPO_URL = 'https://github.com/TCBeekley/Shipped'
@@ -36,7 +36,13 @@ const projects: Project[] = [
     shipped: '2026-05',
     preview: (
       <div className="card-preview card-preview--shot">
-        <img src={nchsaaCard} alt="" width="360" height="180" loading="lazy" />
+        <img
+          src={`${IMG}/nchsaa-bracket-card.webp`}
+          alt=""
+          width="360"
+          height="180"
+          loading="lazy"
+        />
       </div>
     ),
   },
@@ -51,7 +57,7 @@ const projects: Project[] = [
     shipped: '2026-08',
     preview: (
       <div className="card-preview card-preview--icon">
-        <img src={cpapIcon} alt="" width="72" height="72" />
+        <img src={`${IMG}/cpap-icon.svg`} alt="" width="72" height="72" />
       </div>
     ),
   },
@@ -196,11 +202,11 @@ function App() {
                 <picture>
                   <source
                     type="image/webp"
-                    srcSet={`${spt50Icon140Webp} 1x, ${spt50Icon280Webp} 2x, ${spt50Icon420Webp} 3x`}
+                    srcSet={`${IMG}/spt50-icon-140.webp 1x, ${IMG}/spt50-icon-280.webp 2x, ${IMG}/spt50-icon-420.webp 3x`}
                   />
                   <img
-                    src={spt50Icon140}
-                    srcSet={`${spt50Icon140} 1x, ${spt50Icon280} 2x, ${spt50Icon420} 3x`}
+                    src={`${IMG}/spt50-icon-140.png`}
+                    srcSet={`${IMG}/spt50-icon-140.png 1x, ${IMG}/spt50-icon-280.png 2x, ${IMG}/spt50-icon-420.png 3x`}
                     alt="SPT-50 app icon"
                     width="140"
                     height="140"
