@@ -14,12 +14,16 @@ const SPT50_APP_STORE_URL =
   'https://apps.apple.com/us/app/spt-50-license-plate-game/id6787229051'
 
 interface Project {
-  href: string
+  // Omitted while a project has no page to send anyone to. Extensionless
+  // paths do not 404 against S3 — the SPA fallback quietly serves the home
+  // page instead — so a placeholder href reads as a working link and is not.
+  href?: string
   kicker: string
   title: string
   pitch: string
   stack: string
-  cta: string
+  // Dropped alongside href: a call to action on an inert card is a lie.
+  cta?: string
   shipped: string
   preview: ReactNode
 }
@@ -62,13 +66,11 @@ const projects: Project[] = [
     ),
   },
   {
-    href: '/stitch',
     kicker: 'Web app · live',
     title: 'Stitch',
     pitch:
       'Uniform ordering for travel sports organizations — teams order, orgs approve, vendors fulfill.',
     stack: 'React · FastAPI · DynamoDB',
-    cta: 'Open the app',
     shipped: '2025-08',
     preview: (
       <div className="card-preview">
@@ -85,7 +87,7 @@ const projects: Project[] = [
       'Scheduled capture of the D1 baseball transfer portal — every version kept, so "what changed" is a SQL question. About a dollar a month.',
     stack: 'Python · Lambda · S3 · Parquet',
     cta: 'Read the pipeline',
-    shipped: '2025-01',
+    shipped: '2026-06',
     preview: (
       <div className="card-preview">
         <span className="preview-tag">capture pipeline · case study</span>
@@ -93,13 +95,11 @@ const projects: Project[] = [
     ),
   },
   {
-    href: '/openvpn-fleet',
     kicker: 'Infrastructure · AWS',
     title: 'OpenVPN fleet',
     pitch:
       'Four failure modes survived with ~zero dollars of new infrastructure. No load balancer, no ASG.',
     stack: 'EC2 · CloudWatch · Route 53',
-    cta: 'Read the design',
     shipped: '2026-06',
     preview: (
       <div className="card-preview card-preview--fleet">
@@ -129,8 +129,8 @@ function ProjectCard({
   shipped,
   preview,
 }: Project) {
-  return (
-    <a href={href} className="project-card">
+  const body = (
+    <>
       {preview}
       <div className="card-body">
         <p className="card-kicker">{kicker}</p>
@@ -138,12 +138,26 @@ function ProjectCard({
         <p className="card-pitch">{pitch}</p>
         <p className="card-stack">{stack}</p>
         <div className="card-foot">
-          <span className="card-cta">
-            {cta} <span aria-hidden="true">→</span>
-          </span>
+          {cta && (
+            <span className="card-cta">
+              {cta} <span aria-hidden="true">→</span>
+            </span>
+          )}
           <span className="shipped-stamp">shipped: {shipped}</span>
         </div>
       </div>
+    </>
+  )
+
+  // No page yet, so no anchor: an inert card is honest, whereas a link to a
+  // path that does not exist silently re-serves the home page.
+  if (!href) {
+    return <div className="project-card project-card--pending">{body}</div>
+  }
+
+  return (
+    <a href={href} className="project-card">
+      {body}
     </a>
   )
 }

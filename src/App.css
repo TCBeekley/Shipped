@@ -267,6 +267,22 @@
   }
 }
 
+/*
+ * A project whose case study is not written yet renders as a div, not an
+ * anchor, so it must not borrow the hover affordance of a real link. With no
+ * CTA in the footer, the shipped stamp stays right-aligned to match the
+ * cards around it.
+ */
+.project-card--pending {
+  &:hover {
+    border-color: var(--border);
+  }
+
+  .card-foot {
+    justify-content: flex-end;
+  }
+}
+
 .card-preview {
   height: 150px;
   background: repeating-linear-gradient(
