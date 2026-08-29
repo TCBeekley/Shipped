@@ -18,7 +18,10 @@ describe('<App />', () => {
     render(<App />)
     const featured = screen.getByRole('link', { name: /SPT-50/ })
 
-    expect(featured).toHaveAttribute('href', '/spt-50')
+    expect(featured).toHaveAttribute(
+      'href',
+      'https://apps.apple.com/us/app/spt-50-license-plate-game/id6787229051',
+    )
     expect(featured).toHaveTextContent(/view on the app\sstore/i)
     expect(featured).toHaveTextContent('shipped: 2026-03')
     expect(screen.getByAltText('SPT-50 app icon')).toBeInTheDocument()

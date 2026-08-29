@@ -10,6 +10,8 @@ import nchsaaCard from './assets/nchsaa/bracket-card.webp'
 import './App.css'
 
 const REPO_URL = 'https://github.com/TCBeekley/Shipped'
+const SPT50_APP_STORE_URL =
+  'https://apps.apple.com/us/app/spt-50-license-plate-game/id6787229051'
 
 interface Project {
   href: string
@@ -183,7 +185,7 @@ function App() {
 
           <section id="projects" className="featured">
             <h2 className="eyebrow">Featured · on the App Store</h2>
-            <a href="/spt-50" className="featured-card">
+            <a href={SPT50_APP_STORE_URL} className="featured-card">
               <div className="featured-art">
                 <span className="soon-badge">case study soon</span>
                 {/*
