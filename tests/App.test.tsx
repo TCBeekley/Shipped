@@ -14,17 +14,25 @@ describe('<App />', () => {
     ).toBeInTheDocument()
   })
 
-  it('features SPT-50 with its App Store CTA and shipped date', () => {
+  it('features SPT-50 with its case study CTA and shipped date', () => {
     render(<App />)
     const featured = screen.getByRole('link', { name: /SPT-50/ })
 
-    expect(featured).toHaveAttribute(
+    expect(featured).toHaveAttribute('href', '/spt-50.html')
+    expect(featured).toHaveTextContent(/read the case study/i)
+    expect(featured).toHaveTextContent('shipped: 2026-08')
+    expect(featured).not.toHaveTextContent(/case study soon/i)
+    expect(screen.getByAltText('SPT-50 app icon')).toBeInTheDocument()
+  })
+
+  it('keeps the App Store link beside the featured card', () => {
+    render(<App />)
+    expect(
+      screen.getByRole('link', { name: /view on the app\sstore/i }),
+    ).toHaveAttribute(
       'href',
       'https://apps.apple.com/us/app/spt-50-license-plate-game/id6787229051',
     )
-    expect(featured).toHaveTextContent(/view on the app\sstore/i)
-    expect(featured).toHaveTextContent('shipped: 2026-03')
-    expect(screen.getByAltText('SPT-50 app icon')).toBeInTheDocument()
   })
 
   it('renders a card with a shipped stamp for every project', () => {
@@ -44,7 +52,7 @@ describe('<App />', () => {
 
   it('labels every card as a pending case study', () => {
     render(<App />)
-    expect(screen.getAllByText('case study soon')).toHaveLength(3)
+    expect(screen.getAllByText('case study soon')).toHaveLength(2)
   })
 
   it('points the about links at real destinations', () => {

@@ -331,6 +331,14 @@
   width: min(100%, 1100px);
 }
 
+/*
+ * A phone capture is portrait: at the 1100px figure width it would stand four
+ * screens tall. Cap it at its natural 1x width instead.
+ */
+.shot--phone {
+  width: min(100%, 360px);
+}
+
 .shot img {
   display: block;
   width: 100%;

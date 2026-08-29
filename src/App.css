@@ -212,6 +212,21 @@
   border-radius: 8px;
 }
 
+.featured-aside {
+  margin: 14px 0 0;
+  font-family: var(--mono);
+  font-size: 12px;
+
+  a {
+    color: var(--accent-text);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--accent-hover);
+    }
+  }
+}
+
 .shipped-stamp {
   font-family: var(--mono);
   font-size: 12px;
