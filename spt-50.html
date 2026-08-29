@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="SPT·50 — the license-plate game as asynchronous multiplayer iOS. SwiftUI and Firestore behind a protocol, a build-time US map, coalesced push digests, and the Sign in with Apple nonce race that cost a round of App Review."
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#fafafa"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#18181b"
+    />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="SPT·50 — case study" />
+    <meta
+      property="og:description"
+      content="The license-plate game as asynchronous multiplayer iOS: one dataset behind two game modes, a map compiled at build time, coalesced push digests, and the nonce race that cost a round of App Review."
+    />
+    <meta property="og:url" content="https://shipped.beekley.dev/spt-50.html" />
+    <meta
+      property="og:image"
+      content="https://shipped.beekley.dev/og-card.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="shipped: apps people use, systems that stay up. shipped.beekley.dev — web, iOS, infrastructure."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://shipped.beekley.dev/spt-50.html" />
+    <link rel="stylesheet" href="/src/index.css" />
+    <link rel="stylesheet" href="/src/pages/case-study.css" />
+    <title>SPT·50 — shipped.beekley.dev</title>
+  </head>
+  <body>
+    <div class="page">
+      <div class="container">
+        <header class="site-header">
+          <a href="/" class="wordmark">
+            shipped<span class="wordmark-dot">.</span
+            ><span class="wordmark-domain">beekley.dev</span>
+          </a>
+          <nav class="site-nav" aria-label="Site">
+            <a href="/#projects">projects</a>
+            <a href="/#about">about</a>
+            <a href="mailto:tim@beekley.engineering">contact</a>
+          </nav>
+        </header>
+
+        <main>
+          <article class="case">
+            <p class="eyebrow">Case study · iOS app</p>
+            <h1 class="case-title">SPT·50</h1>
+            <p class="case-lede">
+              The license-plate game is a road-trip standby: spot all fifty
+              states before you get home. Nobody ever finishes. SPT·50 keeps the
+              game running after the trip ends — asynchronous multiplayer played
+              over weeks or months, in several games at once, with people who
+              were never in your car. It is on the App Store.
+            </p>
+
+            <ul class="chip-row case-chips">
+              <li class="chip">
+                <span class="dot" aria-hidden="true">●</span>&nbsp; on the App
+                Store
+              </li>
+              <li class="chip">SwiftUI · Firebase · iOS 18+</li>
+              <li class="chip">shipped: 2026-08</li>
+            </ul>
+
+            <p class="case-cta-row">
+              <a
+                class="case-cta"
+                href="https://apps.apple.com/us/app/spt-50-license-plate-game/id6787229051"
+                >View on the App Store <span aria-hidden="true">↗</span></a
+              >
+            </p>
+
+            <aside class="callout" aria-labelledby="timeline-heading">
+              <h2 id="timeline-heading" class="callout-title">
+                First commit to App Store in eight weeks
+              </h2>
+              <p>
+                Scaffold on 2 July 2026, first TestFlight build three days
+                later, submitted for review on 1 August, live on 29 August as
+                1.0.0 build 2. Build 1 was rejected. That rejection turned out
+                to be a real concurrency bug rather than a reviewer
+                misunderstanding, and it is the most interesting thing in this
+                write-up — it is the fourth section down.
+              </p>
+            </aside>
+
+            <figure class="shot shot--phone">
+              <img
+                src="/src/assets/spt50/board-360.webp"
+                srcset="
+                  /src/assets/spt50/board-360.webp 1x,
+                  /src/assets/spt50/board-720.webp 2x
+                "
+                width="360"
+                height="782"
+                loading="lazy"
+                decoding="async"
+                alt="A collaborative game board in SPT-50: a Summer Road Trip game at 26 of 50, a Spotted a Plate button, a US map with the claimed states filled in green against unclaimed cream, and a feed of the family's latest spots — Idaho by Dad two hours ago, Minnesota by Mom, Wisconsin by Maya."
+              />
+              <figcaption>
+                A collaborative board: one map for the whole group, filled from
+                the same spot documents a competitive game would render as
+                separate boards. The map is SVG paths compiled at build time,
+                not a projection computed on the phone.
+              </figcaption>
+            </figure>
+
+            <h2>One dataset, two games</h2>
+            <p>
+              A game runs in one of two modes.
+              <strong>Competitive</strong> gives every player their own board of
+              fifty and turns it into a race.
+              <strong>Collaborative</strong> gives the whole group one shared
+              board to fill together. They feel like different games, and the
+              obvious implementation is two of everything: two schemas, two
+              write paths, two sets of rules, two sets of bugs.
+            </p>
+            <p>
+              The mode never reaches the data. Every spot is a document in one
+              subcollection under its game, written the same way whoever claimed
+              it and whatever mode the game is in. Collaborative boards dedupe
+              those spots by state; competitive boards group them by player.
+              Mode is a rendering decision made at the last possible moment,
+              which means one write path, one set of security rules to get
+              right, and no migration if a group ever wants to switch. Scores
+              are derived from the spots that are already loaded — there are no
+              counter documents to drift out of sync with the thing they count.
+            </p>
+
+            <h2>The map is data, not a dependency</h2>
+            <p>
+              The board is a real map of the United States: tap Nevada, claim
+              Nevada. Getting an accurate one into a mobile app usually means
+              dragging a projection library along for the ride, so the app
+              spends startup cycles reprojecting geography that has not moved
+              since the last release.
+            </p>
+            <p>
+              Instead a build-time script takes the us-atlas TopoJSON — already
+              projected with the Albers USA composite, so Alaska and Hawaii sit
+              in their familiar insets — and flattens the fifty states into SVG
+              path strings with a computed viewBox. The output is a 124 KB JSON
+              file, committed and reproducible. The app parses it into SwiftUI
+              paths and aspect-fits it to whatever space it has. No projection
+              code ships, and the map component knows nothing about Firebase: it
+              takes a dictionary of state-to-status and hands back taps, which
+              is what makes it testable without a backend.
+            </p>
+            <p>
+              A hit test against Rhode Island is unkind on a phone, so spotting
+              by name is a first-class path rather than a fallback — it is also
+              the current accessibility answer for anyone not tapping precise
+              shapes.
+            </p>
+
+            <h2>Notifications that don't punish you for playing</h2>
+            <p>
+              A shared board plus a naïve write trigger equals a notification
+              per spot. One passenger working through a rest-stop parking lot
+              would generate a dozen pushes in as many minutes, and everyone
+              else in the game would turn notifications off — permanently, and
+              on the first day.
+            </p>
+            <p>
+              So the backend debounces. A Cloud Function on spot creation fans
+              the new spot out into per-recipient digest documents; a scheduled
+              function sweeps every minute and sends a single coalesced push per
+              digest once that game has been quiet for two minutes — but never
+              holds one longer than five, so an active game still feels live.
+              One flurry of spotting becomes one notification, and a tapped
+              notification deep-links to the board that produced it rather than
+              dropping you on the home screen to find it yourself.
+            </p>
+
+            <h2>The rejection: a nonce race in Sign in with Apple</h2>
+            <p>
+              App Review rejected build 1 under guideline 2.1 with a single
+              line: an error message during Sign in with Apple. The
+              screenshotless kind of report that is very easy to file under
+              "reviewer had no iCloud account on that device" and resubmit
+              unchanged.
+            </p>
+            <p>
+              The backend logs argued otherwise. Firebase had recorded no failed
+              sign-in attempt at all for that window — consistent with the
+              identity provider rejecting the credential before it ever became
+              an attempt, which is not what a device-side problem looks like.
+            </p>
+            <p>
+              The bug was a race. Sign in with Apple wants a nonce: the app
+              sends Apple the SHA-256 hash, gets an identity token back with
+              that hash inside it, and passes the raw value to Firebase, which
+              checks that the two agree. The auth service kept
+              <em>one</em> raw nonce in a property, and every new request
+              overwrote it. Tap the button twice while the system sheet is slow
+              on a bad connection and two requests are in flight: the first one
+              completes carrying the first request's hash, while the property
+              now holds the second request's raw value. The pair does not match,
+              Firebase refuses it, and the user gets exactly the unhelpful error
+              message the reviewer described. Reproduced on a physical device by
+              doing precisely that.
+            </p>
+            <p>
+              The fix replaces the single slot with a registry: each prepared
+              request registers its raw nonce under its own hash, and when an
+              authorization completes the app reads the nonce claim out of the
+              returned identity token and looks up the raw value that actually
+              belongs to it. Any interleaving now resolves correctly, on both
+              the sign-in and the delete-account re-authentication path. The
+              token payload is decoded, not trusted — Firebase still verifies
+              the signature. The regression tests interleave two and three
+              concurrent requests, because a fix for a race that is only tested
+              serially is not tested.
+            </p>
+            <p>
+              Resubmitted the same day with a note explaining the root cause.
+              The lesson worth keeping: a vague reviewer report plus telemetry
+              that shows nothing is not evidence that nothing happened.
+            </p>
+
+            <h2>Decisions worth naming</h2>
+            <dl class="decisions">
+              <dt>Firestore lives behind a protocol</dt>
+              <dd>
+                No view and no view-model imports Firebase. The repository is an
+                interface; the Firestore implementation is one conformance and
+                the in-memory fake used by the tests is another. That is what
+                lets 116 unit tests cover the game logic without a network, a
+                simulator account, or a live database — and it is the reason the
+                nonce race could be pinned down in tests instead of by
+                resubmitting to Apple and waiting.
+              </dd>
+
+              <dt>Security rules are code, and code gets tested</dt>
+              <dd>
+                Membership gating, the locked-down invite and digest
+                collections, and the game-name length cap all live in
+                <code>firestore.rules</code>, exercised by 21 tests against the
+                Firestore emulator on every pull request and deployed
+                automatically when they pass. Client-side validation is a
+                courtesy to the user; the rules are the actual boundary.
+              </dd>
+
+              <dt>Invite codes are built to be read aloud</dt>
+              <dd>
+                Six uppercase characters with the ambiguous glyphs removed — no
+                0 against O, no 1 against I or L — because the codes get shouted
+                across a car. Universal links on
+                <code>spt-50.app</code> handle the case where somebody can
+                paste, and a small lookup collection lets a non-member resolve a
+                code to a game without being able to read anything else about
+                it.
+              </dd>
+
+              <dt>Honor system, deliberately</dt>
+              <dd>
+                No photo, no verification, no proof. This is a game between
+                people who know each other, and a proof requirement would cost
+                more in friction than cheating costs in fun. The fields for
+                photos and verification exist in the model and stay empty in v1
+                — the schema is ready for a decision that has not been made yet.
+              </dd>
+
+              <dt>Leaving is as first-class as arriving</dt>
+              <dd>
+                Account deletion is in the app, not in an email to support: it
+                re-authenticates with Apple, revokes the Apple token, then a
+                callable function purges roster entries, spots, orphaned games
+                and invites, pending digests, and the profile before deleting
+                the auth user. Apple requires it. It is also the correct
+                behaviour, and the thing that ought to be hardest to get right
+                is the thing that most deserves a test.
+              </dd>
+
+              <dt>The pipeline is part of the product</dt>
+              <dd>
+                Pull requests run linting, the unit suite, the rules emulator
+                tests, and the Cloud Functions tests behind one required check.
+                Signed builds and TestFlight delivery run on a self-hosted Mac
+                mini with a persistent signing keychain, after hosted runners
+                spent a month re-importing certificates on every job. Releases
+                are tagged; the deployed thing is the thing CI tested.
+              </dd>
+            </dl>
+
+            <h2>Stack</h2>
+            <p class="stack-line">
+              Swift · SwiftUI · async/await · Firebase Auth (Sign in with Apple)
+              · Cloud Firestore · Cloud Functions gen 2 (TypeScript) · FCM ·
+              XCTest · GitHub Actions · self-hosted macOS runner
+            </p>
+            <p>
+              iPhone-only and portrait-only for v1, with Dynamic Type support
+              throughout and a design system — road-trip Americana, cream paper
+              and highway-sign green — implemented once as tokens and shared
+              components rather than restyled per screen. Deferred on purpose:
+              photo verification, per-state slogans, leaderboards, and a
+              provinces ruleset.
+            </p>
+
+            <p class="case-footer-links">
+              <a
+                href="https://apps.apple.com/us/app/spt-50-license-plate-game/id6787229051"
+                >App Store <span aria-hidden="true">↗</span></a
+              >
+              <a href="/#projects">back to projects</a>
+            </p>
+          </article>
+        </main>
+
+        <footer class="site-footer">
+          shipped.beekley.dev &nbsp;·&nbsp; web · iOS · infra &nbsp;·&nbsp;
+          evidence over claims, done over described &nbsp;·&nbsp;
+          <a href="https://github.com/TCBeekley/Shipped">source ↗</a>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -5,6 +5,10 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://shipped.beekley.dev/spt-50.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://shipped.beekley.dev/nchsaa-seeding.html</loc>
     <priority>0.8</priority>
   </url>

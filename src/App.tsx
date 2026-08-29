@@ -191,9 +191,8 @@ function App() {
 
           <section id="projects" className="featured">
             <h2 className="eyebrow">Featured · on the App Store</h2>
-            <a href={SPT50_APP_STORE_URL} className="featured-card">
+            <a href="/spt-50.html" className="featured-card">
               <div className="featured-art">
-                <span className="soon-badge">case study soon</span>
                 {/*
                   Above the fold, so never lazy-loaded. Fixed 140px box with
                   1x/2x/3x sources; WebP first, PNG for anything that cannot
@@ -223,13 +222,21 @@ function App() {
                 </p>
                 <div className="featured-meta">
                   <span className="store-button">
-                    View on the App&nbsp;Store&nbsp;
-                    <span aria-hidden="true">↗</span>
+                    Read the case study <span aria-hidden="true">→</span>
                   </span>
-                  <span className="shipped-stamp">shipped: 2026-03</span>
+                  <span className="shipped-stamp">shipped: 2026-08</span>
                 </div>
               </div>
             </a>
+            {/*
+              The card is the case study, so the store link lives beside it:
+              an anchor cannot nest inside another anchor.
+            */}
+            <p className="featured-aside">
+              <a href={SPT50_APP_STORE_URL}>
+                view on the App&nbsp;Store <span aria-hidden="true">↗</span>
+              </a>
+            </p>
           </section>
 
           <section className="project-grid" aria-labelledby="more-projects">

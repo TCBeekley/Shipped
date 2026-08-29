@@ -98,8 +98,23 @@ async function cpapShots() {
   }
 }
 
+/**
+ * SPT-50 board capture. Portrait phone screenshot rendered at 360 CSS px, so
+ * 1x/2x is the whole ladder — the source is already only 720 wide. WebP only,
+ * same reasoning as the other screenshots.
+ */
+async function spt50Shot() {
+  for (const width of [360, 720]) {
+    await sharp(out('src/assets/spt50/board-source.png'))
+      .resize({ width })
+      .webp({ quality: 80 })
+      .toFile(out(`src/assets/spt50/board-${width}.webp`))
+  }
+}
+
 await appIcon()
 await ogCard()
 await nchsaaShots()
 await cpapShots()
+await spt50Shot()
 console.log('Regenerated app icon variants, the og card, and app screenshots.')
