@@ -42,10 +42,12 @@ describe('<App />', () => {
       ['NCHSAA Bracket Projector', 'shipped: 2026-05'],
       ['CPAP Tracker', 'shipped: 2026-08'],
       ['Stitch', 'shipped: 2025-08'],
-      ['Transfer Tracker', 'shipped: 2025-01'],
+      ['Transfer Tracker', 'shipped: 2026-06'],
       ['OpenVPN fleet', 'shipped: 2026-06'],
     ]) {
-      const card = screen.getByRole('link', { name: new RegExp(title) })
+      const card = screen
+        .getByRole('heading', { level: 3, name: title })
+        .closest('.project-card')
       expect(card).toHaveTextContent(shipped)
     }
   })
@@ -53,6 +55,53 @@ describe('<App />', () => {
   it('labels every card as a pending case study', () => {
     render(<App />)
     expect(screen.getAllByText('case study soon')).toHaveLength(2)
+  })
+
+  it('stamps Transfer Tracker with the month its pipeline was built', () => {
+    render(<App />)
+    // The TransferTracker repo begins 2026-06-12; anything earlier is a claim
+    // the repository itself disproves.
+    const card = screen.getByRole('link', { name: /Transfer Tracker/ })
+
+    expect(card).toHaveTextContent('shipped: 2026-06')
+    expect(card).not.toHaveTextContent('2025-01')
+  })
+
+  it('leaves projects without a case study inert rather than linked', () => {
+    render(<App />)
+
+    // An extensionless href does not 404 against S3 — the SPA fallback serves
+    // the home page — so an unwritten case study must not render an anchor.
+    for (const title of ['Stitch', 'OpenVPN fleet']) {
+      expect(screen.queryByRole('link', { name: new RegExp(title) })).toBeNull()
+
+      const card = screen
+        .getByRole('heading', { level: 3, name: title })
+        .closest('.project-card')
+      expect(card).not.toBeNull()
+      expect(card?.tagName).toBe('DIV')
+      expect(card).toHaveTextContent(/case study soon/i)
+    }
+  })
+
+  it('points every project link at a page that exists', () => {
+    render(<App />)
+
+    // Every page Vite is configured to emit, plus the home page.
+    const pages = new Set([
+      '/',
+      '/index.html',
+      '/spt-50.html',
+      '/transfer-tracker.html',
+      '/nchsaa-seeding.html',
+      '/cpap-tracker.html',
+    ])
+
+    for (const link of screen.getAllByRole('link')) {
+      const href = link.getAttribute('href') ?? ''
+      if (!href.startsWith('/')) continue // external, mailto, or in-page anchor
+      expect(pages.has(href), `${href} has no page behind it`).toBe(true)
+    }
   })
 
   it('points the about links at real destinations', () => {
