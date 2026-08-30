@@ -115,12 +115,24 @@ describe('HostingStack', () => {
     })
   })
 
-  test('rewrites 403/404 to index.html for SPA routing', () => {
+  test('answers an unmatched path with 404.html and a real 404', () => {
+    // The status is the point. Answering 200 made broken internal links
+    // indistinguishable from working ones, and two of them shipped that way.
+    // 403 is mapped as well as 404: behind OAC with no s3:ListBucket grant,
+    // S3 reports a missing key as 403.
     template.hasResourceProperties('AWS::CloudFront::Distribution', {
       DistributionConfig: Match.objectLike({
         CustomErrorResponses: [
-          Match.objectLike({ ErrorCode: 403, ResponseCode: 200 }),
-          Match.objectLike({ ErrorCode: 404, ResponseCode: 200 }),
+          Match.objectLike({
+            ErrorCode: 403,
+            ResponseCode: 404,
+            ResponsePagePath: '/404.html',
+          }),
+          Match.objectLike({
+            ErrorCode: 404,
+            ResponseCode: 404,
+            ResponsePagePath: '/404.html',
+          }),
         ],
       }),
     })
