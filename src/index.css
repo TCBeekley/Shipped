@@ -28,6 +28,8 @@
   --stripe: #f4f4f5;
   --preview-bg: #fbfbfc;
   --spt50-green: #2e6f4f;
+  /* The CPAP icon's own accent-400 gust, reused as its preview field. */
+  --cpap-blue: #94bce3;
 
   --sans: -apple-system, 'Helvetica Neue', Arial, sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, monospace;

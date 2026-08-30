@@ -295,6 +295,15 @@
   justify-content: center;
   border-bottom: 1px solid var(--border-soft);
 
+  /*
+   * The app icon is a dark squircle; the near-white stripes left it floating
+   * on nothing. Its own accent blue gives it a field to sit on, the way the
+   * screenshot cards sit on --spt50-green.
+   */
+  &.card-preview--icon {
+    background: var(--cpap-blue);
+  }
+
   &.card-preview--fleet {
     background: var(--preview-bg);
     flex-direction: column;
