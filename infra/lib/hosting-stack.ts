@@ -37,17 +37,23 @@ export class HostingStack extends cdk.Stack {
       validation: acm.CertificateValidation.fromDns(),
     })
 
-    // CSP is tuned to what `npm run build` actually emits: one external
-    // module script, one external stylesheet, no inline script or style.
-    // `data:` is required for img-src because Vite inlines small SVG assets
-    // (the CPAP card icon) as data URIs. Nothing is fetched cross-origin, so
-    // default-src stays 'self'. Re-check this string if the build ever gains
-    // inline styles, web fonts, or an analytics beacon.
+    // CSP is tuned to what `npm run build` actually emits, re-checked against
+    // dist/ rather than assumed: external stylesheets only, no inline style,
+    // no inline or external script, and no data: URIs anywhere in the markup
+    // or the CSS. The home page is prerendered and every case study is hand
+    // written HTML, so 'none' for script-src is a description of the build
+    // rather than an aspiration -- and it is what makes the zero-JavaScript
+    // claim enforceable at the edge instead of merely true today.
+    //
+    // Re-check this string if the build ever gains inline styles, web fonts,
+    // an analytics beacon, or a data: URI (Vite inlines assets under
+    // build.assetsInlineLimit, so a small enough new image would need
+    // `data:` restored to img-src).
     const contentSecurityPolicy = [
       "default-src 'self'",
-      "script-src 'self'",
+      "script-src 'none'",
       "style-src 'self'",
-      "img-src 'self' data:",
+      "img-src 'self'",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'none'",
