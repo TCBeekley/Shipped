@@ -83,14 +83,14 @@ describe('HostingStack', () => {
     })
   })
 
-  test('locks the CSP down to same-origin script, style, and data images', () => {
+  test('forbids script outright and keeps everything else same-origin', () => {
     template.hasResourceProperties('AWS::CloudFront::ResponseHeadersPolicy', {
       ResponseHeadersPolicyConfig: Match.objectLike({
         SecurityHeadersConfig: Match.objectLike({
           ContentSecurityPolicy: {
             ContentSecurityPolicy:
-              "default-src 'self'; script-src 'self'; style-src 'self'; " +
-              "img-src 'self' data:; object-src 'none'; base-uri 'self'; " +
+              "default-src 'self'; script-src 'none'; style-src 'self'; " +
+              "img-src 'self'; object-src 'none'; base-uri 'self'; " +
               "form-action 'none'; frame-ancestors 'none'",
             Override: true,
           },
