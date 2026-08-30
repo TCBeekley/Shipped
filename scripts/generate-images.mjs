@@ -14,14 +14,20 @@ import sharp from 'sharp'
 const root = resolve(import.meta.dirname, '..')
 const out = (path) => resolve(root, path)
 
-/** The SPT-50 icon renders in a 140px box; serve 1x/2x/3x, WebP + PNG. */
+/**
+ * The SPT-50 icon renders in a 140px box; serve 1x/2x/3x, WebP + PNG.
+ *
+ * Output lands in public/img/ because the home page references its images by
+ * URL rather than importing them -- it is prerendered and ships no JavaScript,
+ * so there is no client module graph for a bundler import to come from.
+ */
 async function appIcon() {
   const source = out('src/assets/spt50-icon-source.png')
   const widths = [140, 280, 420]
 
   for (const width of widths) {
     const resized = sharp(source).resize(width, width, { fit: 'cover' })
-    const base = out(`src/assets/spt50-icon-${width}`)
+    const base = out(`public/img/spt50-icon-${width}`)
     await mkdir(dirname(base), { recursive: true })
     await resized.clone().webp({ quality: 82 }).toFile(`${base}.webp`)
     await resized.clone().png({ compressionLevel: 9 }).toFile(`${base}.png`)
@@ -76,11 +82,12 @@ async function nchsaaShots() {
   }
 
   // Card preview: the top-left of the bracket, cropped to the tile's aspect.
+  // Home-page asset, so public/img/ -- see appIcon above.
   await sharp(out('src/assets/nchsaa/bracket-source-dark.png'))
     .extract({ left: 0, top: 0, width: 1600, height: 800 })
     .resize({ width: 720 })
     .webp({ quality: 80 })
-    .toFile(out('src/assets/nchsaa/bracket-card.webp'))
+    .toFile(out('public/img/nchsaa-bracket-card.webp'))
 }
 
 /** CPAP Supply Board captures: same treatment as the NCHSAA shots. */
