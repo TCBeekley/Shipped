@@ -114,18 +114,28 @@ export class HostingStack extends cdk.Stack {
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         responseHeadersPolicy: responseHeaders,
       },
-      // SPA client-side routing: serve index.html for unknown paths.
+      /*
+       * There is no client-side router: the home page is prerendered and each
+       * case study is its own document. The old rule answered every unmatched
+       * path with 200 and the home page, which meant a broken internal link
+       * looked like a working one -- two shipped that way -- and every scanner
+       * probing for /wp-login.php was served a full page and billed as a hit.
+       *
+       * Both statuses are mapped because the bucket is private behind OAC:
+       * with no s3:ListBucket grant, S3 answers a missing key with 403 rather
+       * than 404, so 403 is the common case and 404 the rarer one.
+       */
       errorResponses: [
         {
           httpStatus: 403,
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
+          responseHttpStatus: 404,
+          responsePagePath: '/404.html',
           ttl: cdk.Duration.minutes(5),
         },
         {
           httpStatus: 404,
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
+          responseHttpStatus: 404,
+          responsePagePath: '/404.html',
           ttl: cdk.Duration.minutes(5),
         },
       ],

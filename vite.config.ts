@@ -23,6 +23,8 @@ export default defineConfig({
         nchsaaSeeding: resolve(import.meta.dirname, 'nchsaa-seeding.html'),
         cpapTracker: resolve(import.meta.dirname, 'cpap-tracker.html'),
         spt50: resolve(import.meta.dirname, 'spt-50.html'),
+        // Served by CloudFront for any unmatched path, with a real 404 status.
+        notFound: resolve(import.meta.dirname, '404.html'),
       },
     },
   },

@@ -361,6 +361,44 @@
   }
 }
 
+/*
+ * The 404 index. There are only five pages, so the error page lists all of
+ * them rather than offering a search box over nothing -- and a test asserts
+ * this list matches the build's entry points, so it cannot go stale.
+ */
+.notfound-index {
+  display: flex;
+  flex-direction: column;
+  margin: 30px 0 0;
+  border-top: 1px solid var(--border);
+}
+
+.notfound-index a {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 16px 4px;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+}
+
+.notfound-index a:hover {
+  background: var(--stripe);
+}
+
+.notfound-page {
+  font-size: 16.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.notfound-note {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text-tertiary);
+}
+
 .plain-list {
   margin: 14px 0 0;
   padding: 0 0 0 20px;
