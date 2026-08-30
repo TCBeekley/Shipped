@@ -147,7 +147,9 @@ describe('<App />', () => {
     const card = screen.getByRole('link', { name: /Transfer Tracker/ })
 
     expect(card).toHaveAttribute('href', '/transfer-tracker.html')
-    expect(card).toHaveTextContent(/read the pipeline/i)
+    // The dashboard is public now, and the case study opens with a link to it.
+    expect(card).toHaveTextContent(/see the dashboard/i)
+    expect(card).toHaveTextContent(/Data · live/)
     // The case study exists, so this card carries no "soon" badge.
     expect(card).not.toHaveTextContent(/case study soon/i)
   })

@@ -87,16 +87,22 @@ const projects: Project[] = [
   },
   {
     href: '/transfer-tracker.html',
-    kicker: 'Data · pipeline',
+    kicker: 'Data · live',
     title: 'Transfer Tracker',
     pitch:
-      'Scheduled capture of the D1 baseball transfer portal — every version kept, so "what changed" is a SQL question. About a dollar a month.',
-    stack: 'Python · Lambda · S3 · Parquet',
-    cta: 'Read the pipeline',
+      'Scheduled capture of the D1 baseball transfer portal — every version kept, so "what changed" is a SQL question. Now published as a dashboard, for about a dollar a month.',
+    stack: 'Python · Lambda · S3 · Parquet · Athena',
+    cta: 'See the dashboard',
     shipped: '2026-06',
     preview: (
-      <div className="card-preview">
-        <span className="preview-tag">capture pipeline · case study</span>
+      <div className="card-preview card-preview--shot">
+        <img
+          src={`${IMG}/transfer-dashboard-card.webp`}
+          alt=""
+          width="360"
+          height="180"
+          loading="lazy"
+        />
       </div>
     ),
   },
