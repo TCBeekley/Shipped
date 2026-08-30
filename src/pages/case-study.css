@@ -69,10 +69,21 @@
   text-transform: uppercase;
 }
 
-/* Prose column: long-form text stays readable, wide blocks can break out. */
+/*
+ * Prose column: long-form text stays readable, wide blocks can break out.
+ * 620px at the 16.5px body size lands around 72 characters per line. The
+ * column was 680px at 15.5px, which measured 89 -- comfortably past the
+ * 60-75 these pages are read at, and these are long reads.
+ */
 .case {
   padding: 64px 0 0;
-  max-width: 680px;
+  max-width: 620px;
+  /*
+   * Centred in the 1100px container. Left-aligned, a 620px column left a
+   * 578px gutter on the right and 83px on the left, which read as a column
+   * that had lost its other half.
+   */
+  margin-inline: auto;
 }
 
 .case-title {
@@ -85,22 +96,30 @@
 
 .case-lede {
   margin: 18px 0 0;
-  font-size: 17px;
+  font-size: 18.5px;
   line-height: 1.6;
   color: var(--text-secondary);
 }
 
+/*
+ * A case study runs seven sections over several thousand pixels, so a heading
+ * has to survive being scrolled past at speed. At 20px against 15.5px body it
+ * was 1.29x -- close enough to the paragraphs that the sections ran together.
+ * 25px against 16.5px is 1.52x, and the larger top margin does as much work as
+ * the size does.
+ */
 .case h2 {
-  margin: 44px 0 0;
-  font-size: 20px;
+  margin: 58px 0 0;
+  font-size: 25px;
+  line-height: 1.25;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .case p {
-  margin: 14px 0 0;
-  font-size: 15.5px;
-  line-height: 1.68;
+  margin: 15px 0 0;
+  font-size: 16.5px;
+  line-height: 1.7;
   color: var(--text-body);
 }
 
@@ -145,15 +164,24 @@
   padding: 20px 22px;
 }
 
-.callout-title {
+/*
+ * The callout's title is an h2 for the document outline, which means `.case h2`
+ * (0,1,1) outranks a bare `.callout-title` (0,1,0) and drags the section
+ * heading's size and 58px top margin inside the box. Match the specificity so
+ * the callout keeps its own scale.
+ */
+.case .callout-title {
   margin: 0;
-  font-size: 14px;
+  font-size: 17px;
+  line-height: 1.35;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
-.callout p {
-  margin: 8px 0 0;
-  font-size: 14.5px;
+.case .callout p {
+  margin: 9px 0 0;
+  font-size: 15.5px;
+  line-height: 1.62;
   color: var(--text-secondary);
 }
 
@@ -214,8 +242,8 @@
 
 .stage-detail {
   margin: 6px 0 0;
-  font-size: 14.5px;
-  line-height: 1.6;
+  font-size: 15.5px;
+  line-height: 1.62;
   color: var(--text-body);
 }
 
@@ -231,16 +259,16 @@
 }
 
 .decisions dt {
-  margin: 22px 0 0;
-  font-size: 15.5px;
+  margin: 26px 0 0;
+  font-size: 16.5px;
   font-weight: 700;
   color: var(--text);
 }
 
 .decisions dd {
   margin: 8px 0 0;
-  font-size: 15px;
-  line-height: 1.66;
+  font-size: 16px;
+  line-height: 1.68;
   color: var(--text-body);
 }
 
@@ -332,11 +360,37 @@
 }
 
 /*
- * A phone capture is portrait: at the 1100px figure width it would stand four
- * screens tall. Cap it at its natural 1x width instead.
+ * A phone capture is portrait, so it never takes the breakout. It shipped
+ * taking it anyway: the min-width rule below sets .shot and appears later in
+ * this file, so at equal specificity it beat this cap and stretched a 360x782
+ * capture to 1038x2252 -- a third of the page, and four screens of scrolling.
+ * The breakout is now scoped away from this variant so it cannot happen again.
+ *
+ * The capture is mounted rather than left floating: a 300px portrait alone in
+ * a 620px column reads as an accident, and the mount gives it an edge.
  */
-.shot--phone {
-  width: min(100%, 360px);
+.shot--phone .shot-mount {
+  display: flex;
+  justify-content: center;
+  padding: 34px;
+  border-radius: 16px;
+  background: var(--stripe);
+}
+
+.shot--phone .shot-mount img {
+  width: min(100%, 300px);
+  border: 0;
+  /* Roughly the device's own corner radius at this scale. */
+  border-radius: 14px;
+}
+
+/*
+ * SPT-50's board is cream on a single green. Mounting its capture on that same
+ * green is the one saturated block on the page, and it is the app's own colour
+ * rather than a decorative one.
+ */
+.shot--spt50 .shot-mount {
+  background: var(--spt50-green);
 }
 
 .shot img {
@@ -347,17 +401,29 @@
   border-radius: 12px;
 }
 
+/*
+ * A caption under a broken-out figure would otherwise run the figure's full
+ * 1036px, which measures about 140 characters. Hold it to the prose column and
+ * centre it so it stays on the same axis as the text it belongs to.
+ */
 .shot figcaption {
-  margin: 10px 0 0;
-  font-size: 13.5px;
+  max-width: 620px;
+  margin: 12px auto 0;
+  font-size: 14px;
   line-height: 1.6;
   color: var(--text-tertiary);
 }
 
 @media (min-width: 1100px) {
-  .shot {
-    /* The prose column is 680px; let the figure use the full container. */
+  /*
+   * Landscape figures break out past the prose column to the full container.
+   * Centring the overhang rather than letting it all run right keeps the
+   * figure on the column's axis. :not() keeps this away from phone captures,
+   * which have their own cap above.
+   */
+  .shot:not(.shot--phone) {
     width: 1036px;
+    margin-left: calc((1036px - 100%) / -2);
   }
 }
 
