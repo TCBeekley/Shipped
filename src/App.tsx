@@ -10,6 +10,7 @@ const IMG = '/img'
 import './App.css'
 
 const REPO_URL = 'https://github.com/TCBeekley/Shipped'
+const STITCH_URL = 'https://stitch.beekley.dev'
 const SPT50_APP_STORE_URL =
   'https://apps.apple.com/us/app/spt-50-license-plate-game/id6787229051'
 
@@ -66,11 +67,16 @@ const projects: Project[] = [
     ),
   },
   {
-    kicker: 'Web app · live',
+    // The demo environment is a sign-in wall today; a marketing site will
+    // take its place. Say so on the card rather than promising a tour the
+    // link cannot deliver.
+    href: STITCH_URL,
+    kicker: 'Web app · demo',
     title: 'Stitch',
     pitch:
-      'Uniform ordering for travel sports organizations — teams order, orgs approve, vendors fulfill.',
+      'Uniform ordering for travel sports organizations — teams order, orgs approve, vendors fulfill. The demo environment is live behind a sign-in.',
     stack: 'React · FastAPI · DynamoDB',
+    cta: 'Open the sign-in',
     shipped: '2025-08',
     preview: (
       <div className="card-preview">
