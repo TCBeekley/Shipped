@@ -82,18 +82,33 @@
               <li class="chip">shipped: 2026-06</li>
             </ul>
 
-            <aside class="callout" aria-labelledby="status-heading">
-              <h2 id="status-heading" class="callout-title">
-                What you can and cannot click
-              </h2>
-              <p>
-                The capture pipeline runs in AWS on a schedule — that part is
-                live. The dashboards on top of it run in Metabase in Docker on
-                my laptop, so there is no public URL to hand you. This page is
-                the artifact instead: the design, the decisions, and what they
-                cost.
-              </p>
-            </aside>
+            <p class="case-cta-row">
+              <a class="case-cta" href="https://transfer-tracker.beekley.dev"
+                >Open the dashboard <span aria-hidden="true">↗</span></a
+              >
+            </p>
+
+            <figure class="shot">
+              <img
+                src="/src/assets/transfer/dashboard-1100.webp"
+                srcset="
+                  /src/assets/transfer/dashboard-1100.webp 1100w,
+                  /src/assets/transfer/dashboard-2200.webp 2200w
+                "
+                sizes="(min-width: 1100px) 1036px, 100vw"
+                width="1600"
+                height="1170"
+                loading="lazy"
+                decoding="async"
+                alt="The Transfer Portal Intelligence dashboard: 2,593 players in the portal, 70.4% committed, a median of 30 days to commit, and 74 snapshots captured. Below, a stacked daily-commitments chart peaking at 237 on 25 June, net roster flow by conference from the SEC at plus 25 down to the NEC at minus 33, a weekday heatmap, entries by position, and a table of recent commitments to Power Four schools."
+              />
+              <figcaption>
+                Built from the same snapshots the pipeline writes: S3 to
+                Parquet, queried through Athena, rendered to a static page.
+                Nothing is computed when you load it — the numbers are as of the
+                most recent capture, twice a day.
+              </figcaption>
+            </figure>
 
             <h2>What it captures</h2>
             <p>

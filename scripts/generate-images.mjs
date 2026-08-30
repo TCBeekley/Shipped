@@ -112,9 +112,35 @@ async function spt50Shot() {
   }
 }
 
+/*
+ * Transfer Tracker dashboard. The published page sets a 1200px min-width, so
+ * it is captured whole at 1600 CSS px and 2x rather than at a narrow viewport
+ * that would trigger no layout the site actually supports:
+ *
+ *   chrome --headless=new --window-size=1600,1170 --force-device-scale-factor=2 \
+ *     --hide-scrollbars --screenshot=src/assets/transfer/dashboard-source.png \
+ *     https://transfer-tracker.beekley.dev
+ */
+async function transferShot() {
+  for (const width of [1100, 2200]) {
+    await sharp(out('src/assets/transfer/dashboard-source.png'))
+      .resize({ width })
+      .webp({ quality: 80 })
+      .toFile(out(`src/assets/transfer/dashboard-${width}.webp`))
+  }
+
+  // Card preview: the header and KPI row, cropped to the tile's 2:1 aspect.
+  await sharp(out('src/assets/transfer/dashboard-source.png'))
+    .extract({ left: 0, top: 0, width: 3200, height: 1600 })
+    .resize({ width: 720 })
+    .webp({ quality: 80 })
+    .toFile(out('public/img/transfer-dashboard-card.webp'))
+}
+
 await appIcon()
 await ogCard()
 await nchsaaShots()
 await cpapShots()
 await spt50Shot()
+await transferShot()
 console.log('Regenerated app icon variants, the og card, and app screenshots.')
