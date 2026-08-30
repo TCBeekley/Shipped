@@ -72,7 +72,7 @@ describe('<App />', () => {
 
     // An extensionless href does not 404 against S3 — the SPA fallback serves
     // the home page — so an unwritten case study must not render an anchor.
-    for (const title of ['Stitch', 'OpenVPN fleet']) {
+    for (const title of ['OpenVPN fleet']) {
       expect(screen.queryByRole('link', { name: new RegExp(title) })).toBeNull()
 
       const card = screen
@@ -82,6 +82,16 @@ describe('<App />', () => {
       expect(card?.tagName).toBe('DIV')
       expect(card).toHaveTextContent(/case study soon/i)
     }
+  })
+
+  it('sends Stitch to its live demo rather than a local path', () => {
+    render(<App />)
+    const card = screen.getByRole('link', { name: /Stitch/ })
+
+    // Live, but a sign-in wall — the card says so instead of promising a tour.
+    expect(card).toHaveAttribute('href', 'https://stitch.beekley.dev')
+    expect(card).toHaveTextContent(/open the sign-in/i)
+    expect(card).toHaveTextContent(/behind a sign-in/i)
   })
 
   it('points every project link at a page that exists', () => {
