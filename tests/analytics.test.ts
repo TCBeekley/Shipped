@@ -22,13 +22,21 @@ const pages = [
 const read = (page: string) =>
   readFileSync(resolve(process.cwd(), page), 'utf8')
 
+/*
+ * Every tag match below is case-insensitive. HTML tag names are, so <SCRIPT>
+ * is valid markup that a browser executes and the CSP judges identically --
+ * but a case-sensitive guard would wave it through, ship it, and let it fail
+ * in production, which is the exact failure these checks exist to prevent.
+ * CodeQL's js/bad-tag-filter caught this on the first run.
+ */
+
 describe('analytics', () => {
   it('covers every page the build emits', () => {
     expect(pages.length).toBe(6)
 
     for (const page of pages) {
       expect(read(page), `${page} has no tracker`).toMatch(
-        /<script\b[^>]*\bsrc="\/js\/script[^"]*\.js"/s,
+        /<script\b[^>]*\bsrc="\/js\/script[^"]*\.js"/is,
       )
     }
   })
@@ -40,7 +48,7 @@ describe('analytics', () => {
       const html = read(page)
       expect(html).not.toMatch(/src="https?:\/\/[^"]*plausible/i)
 
-      const tag = html.match(/<script\b[^>]*>/s)?.[0] ?? ''
+      const tag = html.match(/<script\b[^>]*>/is)?.[0] ?? ''
       expect(
         tag,
         `${page} should load the tracker from a root-relative path`,
@@ -50,7 +58,7 @@ describe('analytics', () => {
 
   it('reports under the site domain and defers', () => {
     for (const page of pages) {
-      const tag = read(page).match(/<script\b[^>]*>/s)?.[0] ?? ''
+      const tag = read(page).match(/<script\b[^>]*>/is)?.[0] ?? ''
       // Wrong data-domain sends events to a property that is not this site.
       expect(tag, page).toMatch(/data-domain="shipped\.beekley\.dev"/)
       expect(tag, page).toMatch(/\bdefer\b/)
@@ -59,7 +67,7 @@ describe('analytics', () => {
 
   it('ships no inline script, which the CSP has no unsafe-inline for', () => {
     for (const page of pages) {
-      const inline = [...read(page).matchAll(/<script\b([^>]*)>/gs)].filter(
+      const inline = [...read(page).matchAll(/<script\b([^>]*)>/gis)].filter(
         (m) => !/\bsrc=/.test(m[1]),
       )
       expect(inline, `${page} has an inline script`).toHaveLength(0)
