@@ -40,6 +40,18 @@
     <link rel="stylesheet" href="/src/index.css" />
     <link rel="stylesheet" href="/src/App.css" />
     <title>shipped.beekley.dev</title>
+    <!--
+      Plausible, served from this domain rather than plausible.io (CloudFront
+      proxies /js/ and /api/event upstream). Same-origin, so the CSP stays at
+      script-src 'self' and there is no third-party host for a blocker to
+      match. The outbound-links build is deliberate: the point of this site is
+      the clicks that leave it, for the App Store and the live apps.
+    -->
+    <script
+      defer
+      data-domain="shipped.beekley.dev"
+      src="/js/script.outbound-links.js"
+    ></script>
   </head>
   <body>
     <div id="root"></div>

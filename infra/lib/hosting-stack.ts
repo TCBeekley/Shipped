@@ -51,7 +51,13 @@ export class HostingStack extends cdk.Stack {
     // `data:` restored to img-src).
     const contentSecurityPolicy = [
       "default-src 'self'",
-      "script-src 'none'",
+      /*
+       * 'self', not 'none': the Plausible tracker is served from /js/ on this
+       * domain. Still no host other than this one, and still no
+       * 'unsafe-inline', so an injected inline script is refused. Events POST
+       * to /api/event, which default-src 'self' already covers.
+       */
+      "script-src 'self'",
       "style-src 'self'",
       "img-src 'self'",
       "object-src 'none'",
@@ -110,6 +116,9 @@ export class HostingStack extends cdk.Stack {
       },
     )
 
+    // Upstream for the proxied analytics behaviours below.
+    const plausible = new origins.HttpOrigin('plausible.io')
+
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
       domainNames: [config.siteDomain],
       certificate,
@@ -145,6 +154,48 @@ export class HostingStack extends cdk.Stack {
           ttl: cdk.Duration.minutes(5),
         },
       ],
+      /*
+       * Plausible, proxied through this domain rather than loaded from
+       * plausible.io, matching how seeding.beekley.engineering does it. Both
+       * halves become same-origin, which keeps the CSP at script-src 'self'
+       * with no third-party host allowed, and leaves nothing for a content
+       * blocker to match on a filter list.
+       */
+      additionalBehaviors: {
+        // The tracker script. Cacheable and identical for every visitor.
+        '/js/*': {
+          origin: plausible,
+          viewerProtocolPolicy:
+            cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        },
+        /*
+         * The event endpoint. Three things here are load-bearing:
+         *
+         *  - POST must be allowed, so ALLOW_ALL rather than the default
+         *    GET/HEAD. Events are POSTed.
+         *  - Caching must be off. A cached event response would mean one
+         *    visitor's request answering everyone else's.
+         *  - Viewer headers must reach Plausible. ALL_VIEWER_EXCEPT_HOST_HEADER
+         *    forwards User-Agent (device and browser attribution) while letting
+         *    CloudFront set Host to the origin, which ALL_VIEWER would not.
+         *
+         * Plausible's proxy docs are explicit that the visitor's real IP has to
+         * arrive in X-Forwarded-For, and that a missing or wrong value means
+         * "Plausible's bot filter will drop the event silently" -- no error,
+         * just no data. CloudFront populates that header with the viewer IP
+         * when forwarding to a custom origin, which is what makes this work.
+         */
+        '/api/event': {
+          origin: plausible,
+          viewerProtocolPolicy:
+            cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          originRequestPolicy:
+            cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+        },
+      },
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
     })
 

@@ -2,7 +2,7 @@
 // The CloudFront response headers policy (infra/lib/hosting-stack.ts) serves a
 // Content-Security-Policy of:
 //
-//   default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self';
+//   default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self';
 //   object-src 'none'; base-uri 'self'; form-action 'none';
 //   frame-ancestors 'none'
 //
@@ -32,9 +32,24 @@ const FETCHING_REL =
 // line of policy to change if the violation turns out to be intentional.
 const rules = [
   {
-    directive: "script-src 'none'",
-    pattern: /<script\b/gi,
-    hint: 'the site ships no JavaScript; a script tag would be blocked',
+    /*
+     * script-src is 'self', not 'none': the proxied Plausible tracker is
+     * served from /js/ on this domain. That still forbids two things, and
+     * both are the ones that matter. There is no 'unsafe-inline', so an
+     * inline <script> is refused -- which is the payload an injection would
+     * need. And no host but this one is allowed, so a script pulled from a
+     * CDN is refused too.
+     */
+    directive: "script-src 'self'",
+    find: (html) =>
+      [...html.matchAll(/<script\b[^>]*>/gis)]
+        .filter((tag) => {
+          const src = tag[0].match(/\bsrc="([^"]*)"/i)
+          if (!src) return true // inline: no 'unsafe-inline' in the policy
+          return /^https?:\/\//i.test(src[1]) // cross-origin
+        })
+        .map((tag) => tag[0].replace(/\s+/g, ' ')),
+    hint: "inline script needs 'unsafe-inline'; a remote one needs its host allowed",
   },
   {
     directive: "style-src 'self'",

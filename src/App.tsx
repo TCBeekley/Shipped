@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 /*
  * Home-page images live in public/ and are referenced by URL rather than
- * imported. The page is prerendered and ships no JavaScript, so there is no
+ * imported. The page is prerendered and nothing hydrates it, so there is no
  * client module graph for a bundler import to be emitted from. Case-study
  * pages still import theirs through HTML, where Vite content-hashes them.
  */

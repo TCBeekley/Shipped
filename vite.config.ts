@@ -15,7 +15,7 @@ export default defineConfig({
     assetsInlineLimit: 0,
     rollupOptions: {
       // Multi-page: the home page is the React app; case studies are plain
-      // HTML entries that ship no JavaScript at all. Each is a real document,
+      // HTML entries with no application JavaScript. Each is a real document,
       // so crawlers and link unfurlers see content without executing anything.
       input: {
         main: resolve(import.meta.dirname, 'index.html'),
