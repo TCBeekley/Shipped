@@ -73,6 +73,30 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
+      # A --delete sync mirrors the source directory onto the bucket, so an
+      # empty or truncated dist/ would not deploy the site, it would delete
+      # it. download-artifact fails loudly on a bad download today, but the
+      # blast radius here is the whole bucket and CloudFront caches the
+      # wreckage, so assert the artifact is a real build before the first
+      # --delete rather than trusting the step above to have failed.
+      - name: Verify the artifact is a complete build
+        run: |
+          test -s dist/index.html \
+            || { echo "::error::dist/index.html is missing or empty"; exit 1; }
+          assets=$(find dist/assets -type f 2>/dev/null | wc -l | tr -d " ")
+          if [ "$assets" -eq 0 ]; then
+            echo "::error::dist/assets/ is missing or empty"
+            exit 1
+          fi
+          # Every entry in vite.config.ts emits one document. Fewer means a
+          # partial artifact, which the syncs below would prune from the
+          # bucket as though the pages had been deleted on purpose.
+          pages=$(find dist -maxdepth 1 -name '*.html' | wc -l | tr -d ' ')
+          if [ "$pages" -lt 6 ]; then
+            echo "::error::expected 6 prerendered pages in dist/, found $pages"
+            exit 1
+          fi
+          echo "artifact ok: $pages pages, $assets hashed assets"
       # Cache lifetime follows fingerprinting, not file type. Only Vite's
       # dist/assets/** filenames carry a content hash, so only those can be
       # immutable — a new build emits a new name. Anything in public/ keeps
