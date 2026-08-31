@@ -32,7 +32,7 @@ const read = (page: string) =>
 
 describe('analytics', () => {
   it('covers every page the build emits', () => {
-    expect(pages.length).toBe(6)
+    expect(pages.length).toBe(7)
 
     for (const page of pages) {
       expect(read(page), `${page} has no tracker`).toMatch(

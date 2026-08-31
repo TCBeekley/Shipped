@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A single-identity OpenVPN exit fleet on AWS that survives a crashed service, a dead host, and silent drift with no load balancer, no ASG, and no health-check DNS — one layer per failure mode, at about zero dollars of new infrastructure."
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#fafafa"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#18181b"
+    />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="OpenVPN fleet — case study" />
+    <meta
+      property="og:description"
+      content="Failover by layering, not by spending: one layer per failure mode across a single-identity OpenVPN exit fleet on AWS."
+    />
+    <meta
+      property="og:url"
+      content="https://shipped.beekley.dev/openvpn-fleet.html"
+    />
+    <meta
+      property="og:image"
+      content="https://shipped.beekley.dev/og-card.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="shipped: apps people use, systems that stay up. shipped.beekley.dev — web, iOS, infrastructure."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="canonical"
+      href="https://shipped.beekley.dev/openvpn-fleet.html"
+    />
+    <link rel="stylesheet" href="/src/index.css" />
+    <link rel="stylesheet" href="/src/pages/case-study.css" />
+    <title>OpenVPN fleet — shipped.beekley.dev</title>
+    <script
+      defer
+      data-domain="shipped.beekley.dev"
+      src="/js/script.outbound-links.js"
+    ></script>
+  </head>
+  <body>
+    <div class="page">
+      <div class="container">
+        <header class="site-header">
+          <a href="/" class="wordmark">
+            shipped<span class="wordmark-dot">.</span
+            ><span class="wordmark-domain">beekley.dev</span>
+          </a>
+          <nav class="site-nav" aria-label="Site">
+            <a href="/#projects">projects</a>
+            <a href="/#about">about</a>
+            <a href="mailto:tim@beekley.engineering">contact</a>
+          </nav>
+        </header>
+
+        <main>
+          <article class="case">
+            <p class="eyebrow">
+              Failover architecture · single-identity OpenVPN fleet
+            </p>
+            <h1 class="case-title">
+              Three failures handled.<br />A fourth, one config line away.
+            </h1>
+            <p class="case-lede">
+              A full-tunnel exit fleet runs one <code>t4g.micro</code> per
+              region behind an Elastic IP. Making it survive a crashed service,
+              a dead box, and silent drift needs
+              <strong>no load balancer, no ASG, and no health-check DNS</strong>
+              — just the cheapest mechanism that resolves each failure, layered
+              so each one's blast radius is contained by the next.
+            </p>
+
+            <ul class="chip-row case-chips">
+              <li class="chip">
+                <span class="dot" aria-hidden="true">●</span>&nbsp; ≈ $0/mo
+                incremental
+              </li>
+              <li class="chip">no hot standby</li>
+              <li class="chip">recovery: seconds → ~5 min</li>
+              <li class="chip">shipped: 2026-06</li>
+            </ul>
+
+            <aside class="callout" aria-labelledby="scope-heading">
+              <h2 id="scope-heading" class="callout-title">
+                What is deployed, and what is written
+              </h2>
+              <p>
+                Three of the four layers below run in production today. The
+                fourth — cross-region failover — is built and tested, but
+                <code>us-east-2</code> is the only region currently deployed, so
+                the profile it depends on is not emitted. That is a line in
+                <code>config.json</code>, not a rewrite, and the section on it
+                says so plainly rather than describing a capability you cannot
+                check.
+              </p>
+            </aside>
+
+            <p class="eyebrow section-eyebrow">
+              Defense in depth · cheapest layer first
+            </p>
+            <h2>One layer per failure mode</h2>
+            <p>
+              Ordered by blast radius. A failure is caught by the smallest,
+              cheapest layer that can resolve it; the outer layers exist for
+              what the inner ones can't reach.
+            </p>
+
+            <ol class="layers">
+              <li class="layer">
+                <p class="layer-tag">L0 · service</p>
+                <h3 class="layer-name">systemd restart</h3>
+                <p class="layer-detail">
+                  <code>Restart=on-failure</code> on
+                  <code>openvpn-server@server</code>. Catches a segfault, or a
+                  reboot that comes up without the service.
+                </p>
+                <p class="layer-blast">blast: one process</p>
+              </li>
+              <li class="layer">
+                <p class="layer-tag">L1 · instance</p>
+                <h3 class="layer-name">EC2 auto-recovery</h3>
+                <p class="layer-detail">
+                  A CloudWatch alarm on the host status check that recovers the
+                  same box onto fresh hardware — instance ID, ENI, private IP
+                  and Elastic IP all come with it.
+                </p>
+                <p class="layer-blast">blast: one box</p>
+              </li>
+              <li class="layer layer--dormant">
+                <p class="layer-tag">L2 · region</p>
+                <h3 class="layer-name">multi-remote profile</h3>
+                <p class="layer-detail">
+                  One <code>.ovpn</code> lists every region; the client advances
+                  to the next exit on its own. Written and tested — emitted once
+                  a second region is deployed.
+                </p>
+                <p class="layer-blast">blast: one region · not deployed</p>
+              </li>
+              <li class="layer">
+                <p class="layer-tag">L3 · backstop</p>
+                <h3 class="layer-name">SSM healthcheck</h3>
+                <p class="layer-detail">
+                  The existing daily read-only probe. Reddens CI when
+                  self-healing didn't catch something the fleet can't see about
+                  itself.
+                </p>
+                <p class="layer-blast">blast: whole fleet</p>
+              </li>
+            </ol>
+
+            <p class="eyebrow section-eyebrow">L0 + L1 · inside one region</p>
+            <h2>A region that heals itself</h2>
+            <p>
+              The request path top to bottom, with the two recovery mechanisms
+              hanging off the side. Because L1 recovers the same instance, the
+              Elastic IP and DNS name come back with it — every client profile
+              keeps working untouched, and nothing re-associates.
+            </p>
+
+            <ol class="pipeline">
+              <li class="stage">
+                <span class="stage-label">Route 53 · A record</span>
+                <p class="stage-detail">
+                  <code>ohio.vpn.beekley.dev</code> — profiles point at a name,
+                  not a raw address, so a replaced Elastic IP is a one-record
+                  update instead of a config re-issue.
+                </p>
+              </li>
+              <li class="stage">
+                <span class="stage-label">Elastic IP</span>
+                <p class="stage-detail">
+                  Retained across host recovery. The same box keeps its address
+                  through the whole process.
+                </p>
+              </li>
+              <li class="stage">
+                <span class="stage-label">EC2 · t4g.micro</span>
+                <p class="stage-detail">
+                  Ubuntu 24.04 · arm64 · IMDSv2. Recovered by
+                  <strong>L1</strong> on a
+                  <code>StatusCheckFailed_System</code> alarm, in roughly three
+                  to five minutes.
+                </p>
+              </li>
+              <li class="stage">
+                <span class="stage-label">systemd unit</span>
+                <p class="stage-detail">
+                  <code>Restart=on-failure</code>. <strong>L0</strong> resumes a
+                  crashed process in seconds, without anything else noticing.
+                </p>
+              </li>
+              <li class="stage">
+                <span class="stage-label">openvpn-server@server</span>
+                <p class="stage-detail">
+                  UDP 1194 · AES-256-GCM · full tunnel. Watched by
+                  <strong>L3</strong>, the daily SSM healthcheck that reddens
+                  CI.
+                </p>
+              </li>
+            </ol>
+
+            <p>
+              The only new resource is <strong>one CloudWatch alarm</strong> per
+              region. A <code>StatusCheckFailed_System</code> breach recovers
+              the instance onto healthy hardware, keeping the instance ID, ENI,
+              private IP and Elastic IP — so nothing re-associates and no client
+              profile changes. That draws a clean division of labour: L0 resumes
+              a crashed process, L1 a dead host. The one residual gap — the OS
+              up but OpenVPN wedged in a way systemd won't restart, which a
+              system-check alarm cannot see — is exactly what L3 exists to
+              redden.
+            </p>
+
+            <p class="eyebrow section-eyebrow">
+              L1 · the recovery nobody has to run
+            </p>
+            <h2>How a dead host heals itself</h2>
+            <p>
+              A box whose underlying hardware fails between weekly rebuilds.
+              Note what is absent: no ASG, no load balancer, no CloudFormation
+              in the loop, and no re-run of user data. Recovery is a stop/start
+              of the same instance, so its disk, config and address all persist.
+            </p>
+
+            <ol class="plain-list">
+              <li>
+                Two failed system status checks trip the CloudWatch alarm.
+              </li>
+              <li>
+                The alarm's recover action stops and starts the same instance on
+                a new host.
+              </li>
+              <li>
+                The EBS root volume persists — instance ID, ENI and Elastic IP
+                are retained, so there is nothing to re-associate.
+              </li>
+              <li>
+                systemd starts <code>openvpn-server@server</code> on boot; the
+                L0 restart drop-in is already on disk.
+              </li>
+              <li>
+                Same DNS name, same address. The client reconnects on its own
+                through <code>resolv-retry infinite</code>.
+              </li>
+            </ol>
+
+            <p>
+              Roughly three to five minutes end to end, at the same address,
+              with no human in the loop. Because recovery preserves the
+              instance, this is far simpler than an ASG replacement:
+              <strong
+                >no Elastic IP re-association, no fresh AMI, no re-run of
+                <code>bootstrap.py</code></strong
+              >. The root volume — carrying the restart drop-in and the server
+              config — comes back intact. The gate is the system status check,
+              and there is deliberately no tunnel-probing load balancer. The
+              <code>CreationPolicy</code> fail-closed signal still governs
+              deploys; it just isn't part of this autonomous self-heal.
+            </p>
+
+            <p class="eyebrow section-eyebrow">L2 · written, not running</p>
+            <h2>The region layer, and why it is dormant</h2>
+            <p>
+              One identity, one profile naming every exit. No DNS trickery and
+              no server-side moving parts — the failover lives in the OpenVPN
+              client's own retry loop. The client tries the first region; if it
+              is unreachable, <code>connect-timeout 10</code> gives up and dials
+              the next <code>remote</code> in the list. A full cross-region
+              cutover is about ten seconds, with no infrastructure aware it
+              happened.
+            </p>
+            <p>
+              It works because every server certificate is signed by the
+              <strong>one CA</strong> and the client authenticates by
+              certificate (<code>remote-cert-tls server</code>), not hostname —
+              so it already trusts every exit. The profile ships as an extra
+              <code>-failover.ovpn</code> beside the per-region files, leaving
+              deliberate region choice intact.
+            </p>
+            <p>
+              That is the design, and the code for it is written and tested. It
+              is not what runs today. The fleet was consolidated to a single
+              region for cost, and
+              <code>pki.py</code> guards the profile at
+              <code>len(endpoints) &gt; 1</code> — with one exit there is
+              nowhere to fail over to, so no failover profile is generated at
+              all. The honest status is that L2 is one entry in
+              <code>config.json</code> away, not that it is protecting anything
+              right now.
+            </p>
+
+            <p class="eyebrow section-eyebrow">
+              The whole story on one line each
+            </p>
+            <h2>Failure → response</h2>
+
+            <div class="table-scroll">
+              <table class="matrix">
+                <thead>
+                  <tr>
+                    <th scope="col">Failure mode</th>
+                    <th scope="col">Layer</th>
+                    <th scope="col">What recovers it</th>
+                    <th scope="col">Recovery</th>
+                    <th scope="col">Human</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">
+                      Service crashes
+                      <span class="matrix-note"
+                        >segfault, OOM, reboot without the unit</span
+                      >
+                    </th>
+                    <td><span class="layer-tag">L0</span></td>
+                    <td>systemd restarts <code>openvpn-server@server</code></td>
+                    <td class="matrix-time">seconds</td>
+                    <td>none</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">
+                      Host dies
+                      <span class="matrix-note"
+                        >failed system status check, underlying hardware</span
+                      >
+                    </th>
+                    <td><span class="layer-tag">L1</span></td>
+                    <td>
+                      CloudWatch alarm recovers the same box on new hardware
+                      (Elastic IP follows)
+                    </td>
+                    <td class="matrix-time">~3–5 min</td>
+                    <td>none</td>
+                  </tr>
+                  <tr class="matrix-row--dormant">
+                    <th scope="row">
+                      Region unreachable
+                      <span class="matrix-note"
+                        >AWS region outage, or the path to it is down</span
+                      >
+                    </th>
+                    <td><span class="layer-tag">L2</span></td>
+                    <td>
+                      Client advances to the next remote —
+                      <strong>not deployed</strong>; single region today
+                    </td>
+                    <td class="matrix-time">~10 sec</td>
+                    <td>reconnect</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">
+                      Silent drift
+                      <span class="matrix-note"
+                        >OpenVPN wedged but host healthy; config rot</span
+                      >
+                    </th>
+                    <td><span class="layer-tag">L3</span></td>
+                    <td>Daily SSM healthcheck reddens CI</td>
+                    <td class="matrix-time">next run</td>
+                    <td>triage</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p class="eyebrow section-eyebrow">Why it stays cheap</p>
+            <h2>The money argument is the design argument</h2>
+            <p>
+              The fleet's cost is set by the boxes that have to run anyway.
+              Resilience rides on mechanisms that are free, already paid for, or
+              client-side — which is also why consolidating to one region was a
+              config change rather than a redesign.
+            </p>
+
+            <div class="ledger">
+              <h3 class="ledger-title">Incremental cost ledger</h3>
+              <dl class="ledger-rows">
+                <div class="ledger-row">
+                  <dt>L0 systemd <code>Restart=</code></dt>
+                  <dd>$0.00</dd>
+                </div>
+                <div class="ledger-row">
+                  <dt>L1 CloudWatch auto-recovery alarm</dt>
+                  <dd>$0.00</dd>
+                </div>
+                <div class="ledger-row">
+                  <dt>L2 multi-remote profile</dt>
+                  <dd>$0.00</dd>
+                </div>
+                <div class="ledger-row">
+                  <dt>L3 healthcheck (already deployed)</dt>
+                  <dd>$0.00</dd>
+                </div>
+                <div class="ledger-row ledger-row--total">
+                  <dt>Added to the monthly bill</dt>
+                  <dd>≈ $0.00</dd>
+                </div>
+              </dl>
+              <p class="ledger-note">
+                One alarm per region sits inside the standing ten-alarm
+                CloudWatch free tier, and $0.10/mo each beyond it — so ≤
+                $0.40/mo even at the full four-region design.
+              </p>
+            </div>
+
+            <h2>Deliberately excluded</h2>
+            <dl class="decisions">
+              <dt>An ASG of one</dt>
+              <dd>
+                Would also self-heal an OS-level wedge and a terminated box —
+                but it rewrites the whole tested surface and moves the Elastic
+                IP and the readiness signal into boot steps. L0 and the weekly
+                rebuild already cover service and AMI freshness, so
+                auto-recovery closes the one real gap for a fraction of the
+                change.
+              </dd>
+              <dt>A UDP Network Load Balancer</dt>
+              <dd>
+                Roughly $16/mo per region to front a single instance. It buys
+                nothing auto-recovery doesn't, and adds a component that can
+                itself fail.
+              </dd>
+              <dt>Route 53 health-check failover</dt>
+              <dd>
+                Route 53 can't cheaply probe UDP 1194; you would bolt on a TCP
+                health port or a CloudWatch alarm check. L2's client-side retry
+                gets region failover for free — when there is more than one
+                region to get it between.
+              </dd>
+            </dl>
+
+            <h2>Stack</h2>
+            <p class="stack-line">
+              AWS CDK (TypeScript) · Python (PKI + orchestration) · OpenVPN 2.6
+              · Ubuntu 24.04 LTS on t4g.micro · EC2 auto-recovery · Route 53 ·
+              Secrets Manager · SSM · GitHub Actions with OIDC · Jest + pytest
+            </p>
+            <p>
+              One CA whose private key never leaves the laptop; nothing secret
+              is generated on the servers. <code>tools/pki.py</code> signs a
+              server certificate per region and pushes each region's materials
+              into that region's Secrets Manager secret, which the instance
+              reads at boot. Failover by layering, not by spending.
+            </p>
+
+            <p class="case-footer-links">
+              <a href="https://github.com/TCBeekley/BeekleyVPN"
+                >Source on GitHub <span aria-hidden="true">↗</span></a
+              >
+              <a href="/#projects">back to projects</a>
+            </p>
+          </article>
+        </main>
+
+        <footer class="site-footer">
+          shipped.beekley.dev &nbsp;·&nbsp; web · iOS · infra &nbsp;·&nbsp;
+          evidence over claims, done over described &nbsp;·&nbsp;
+          <a href="https://github.com/TCBeekley/Shipped">source ↗</a>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>
