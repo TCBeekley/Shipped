@@ -6,12 +6,19 @@
 
 The source of [shipped.beekley.dev](https://shipped.beekley.dev) — a portfolio
 whose argument is that every project on it is real: live, downloadable, or
-running in production. Every page is static HTML and ships **no JavaScript**:
-the home page is authored as React components and rendered to markup at build
-time, and the case studies are hand-written HTML. React is a build-time tool
-here, not a runtime dependency. Everything is served from S3 behind
-CloudFront, deployed by a build-once pipeline that tags each build and
-promotes the exact artifact CI tested.
+running in production. Every page is static HTML: the home page is authored as
+React components and rendered to markup at build time, and the case studies are
+hand-written HTML. React is a build-time tool here, not a runtime dependency,
+and there is no client-side router or hydration step.
+
+The one script on the page is the Plausible tracker, proxied through this
+domain rather than loaded from `plausible.io` — CloudFront forwards `/js/` and
+`/api/event` upstream. That keeps the CSP at `script-src 'self'` with no
+third-party host allowed, and leaves nothing on the page for a content blocker
+to match, which matters when the audience is engineers.
+
+Everything is served from S3 behind CloudFront, deployed by a build-once
+pipeline that tags each build and promotes the exact artifact CI tested.
 
 The repository is part of the work product: if the site claims the
 infrastructure and delivery are sound, this is where you check.

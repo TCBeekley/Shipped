@@ -83,13 +83,13 @@ describe('HostingStack', () => {
     })
   })
 
-  test('forbids script outright and keeps everything else same-origin', () => {
+  test('allows script only from this origin, and never inline', () => {
     template.hasResourceProperties('AWS::CloudFront::ResponseHeadersPolicy', {
       ResponseHeadersPolicyConfig: Match.objectLike({
         SecurityHeadersConfig: Match.objectLike({
           ContentSecurityPolicy: {
             ContentSecurityPolicy:
-              "default-src 'self'; script-src 'none'; style-src 'self'; " +
+              "default-src 'self'; script-src 'self'; style-src 'self'; " +
               "img-src 'self'; object-src 'none'; base-uri 'self'; " +
               "form-action 'none'; frame-ancestors 'none'",
             Override: true,
@@ -111,6 +111,43 @@ describe('HostingStack', () => {
             }),
           ]),
         },
+      }),
+    })
+  })
+
+  test('proxies the Plausible tracker from this domain', () => {
+    template.hasResourceProperties('AWS::CloudFront::Distribution', {
+      DistributionConfig: Match.objectLike({
+        Origins: Match.arrayWith([
+          Match.objectLike({ DomainName: 'plausible.io' }),
+        ]),
+        CacheBehaviors: Match.arrayWith([
+          Match.objectLike({ PathPattern: '/js/*' }),
+        ]),
+      }),
+    })
+  })
+
+  test('lets the event endpoint POST, uncached, with viewer headers', () => {
+    // All three matter. POST is how events are sent; a cached response would
+    // answer every visitor with the first one's result; and Plausible's docs
+    // are explicit that without the visitor's real IP in X-Forwarded-For the
+    // bot filter drops the event silently, so viewer headers have to survive
+    // the hop. AllViewerExceptHostHeader forwards them while leaving Host for
+    // CloudFront to set to the origin.
+    template.hasResourceProperties('AWS::CloudFront::Distribution', {
+      DistributionConfig: Match.objectLike({
+        // arrayWith matches in order, so each behaviour is asserted on its own
+        // rather than as a sequence that a reorder would break.
+        CacheBehaviors: Match.arrayWith([
+          Match.objectLike({
+            PathPattern: '/api/event',
+            AllowedMethods: Match.arrayWith(['POST']),
+            // Managed CachingDisabled / AllViewerExceptHostHeader.
+            CachePolicyId: '4135ea2d-6df8-44a3-9df3-4b5a84be39ad',
+            OriginRequestPolicyId: 'b689b0a8-53d0-40ab-baf2-68738e2966ac',
+          }),
+        ]),
       }),
     })
   })

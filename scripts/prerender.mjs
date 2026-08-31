@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Renders the home page to real HTML at build time and injects it into
 // dist/index.html. The page has no interactivity, so this is the whole
-// runtime: nothing hydrates it and no JavaScript is served.
+// runtime: nothing hydrates it, and the only script served is the proxied
+// analytics tracker, which touches none of this markup.
 //
 // Runs after `vite build` (see the build script in package.json).
 

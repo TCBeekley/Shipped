@@ -18,7 +18,8 @@ const out = (path) => resolve(root, path)
  * The SPT-50 icon renders in a 140px box; serve 1x/2x/3x, WebP + PNG.
  *
  * Output lands in public/img/ because the home page references its images by
- * URL rather than importing them -- it is prerendered and ships no JavaScript,
+ * URL rather than importing them -- it is prerendered and has no client
+ * module graph,
  * so there is no client module graph for a bundler import to come from.
  */
 async function appIcon() {
