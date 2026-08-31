@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import { axe } from 'vitest-axe'
-import App from '../src/App'
+import App, { ProjectCard } from '../src/App'
 
 describe('<App />', () => {
   it('renders the hero headline', () => {
@@ -52,9 +52,10 @@ describe('<App />', () => {
     }
   })
 
-  it('labels every card as a pending case study', () => {
+  it('labels the one card whose case study is still unwritten', () => {
     render(<App />)
-    expect(screen.getAllByText('case study soon')).toHaveLength(2)
+    // Stitch alone. OpenVPN fleet's case study is published.
+    expect(screen.getAllByText('case study soon')).toHaveLength(1)
   })
 
   it('stamps Transfer Tracker with the month its pipeline was built', () => {
@@ -67,20 +68,45 @@ describe('<App />', () => {
     expect(card).not.toHaveTextContent('2025-01')
   })
 
-  it('leaves projects without a case study inert rather than linked', () => {
+  it('renders a project with nowhere to point as inert, not as a link', () => {
+    // No project is pending today, so this branch is unreachable through
+    // <App />. It is the guard that keeps the next one from shipping as a link
+    // to a path the SPA fallback would answer with the home page.
+    const { container } = render(
+      <ProjectCard
+        kicker="Infrastructure · AWS"
+        title="Unwritten"
+        pitch="No case study yet."
+        stack="EC2"
+        shipped="2026-06"
+        preview={<div className="card-preview" />}
+      />,
+    )
+
+    const card = container.querySelector('.project-card')
+    expect(card?.tagName).toBe('DIV')
+    expect(card).toHaveClass('project-card--pending')
+    expect(container.querySelector('a')).toBeNull()
+    // No CTA either: an arrow on an inert card promises a click that is not there.
+    expect(container.querySelector('.card-cta')).toBeNull()
+  })
+
+  it('never points a card at an extensionless local path', () => {
     render(<App />)
 
-    // An extensionless href does not 404 against S3 — the SPA fallback serves
-    // the home page — so an unwritten case study must not render an anchor.
-    for (const title of ['OpenVPN fleet']) {
-      expect(screen.queryByRole('link', { name: new RegExp(title) })).toBeNull()
-
-      const card = screen
-        .getByRole('heading', { level: 3, name: title })
-        .closest('.project-card')
-      expect(card).not.toBeNull()
-      expect(card?.tagName).toBe('DIV')
-      expect(card).toHaveTextContent(/case study soon/i)
+    /*
+     * The original bug, kept as a rule rather than a list of projects. An
+     * extensionless path does not 404 against S3 -- the fallback answers it --
+     * so a card linking to one reads as working. Two shipped that way. Naming
+     * the pending projects instead would have gone stale the moment one of
+     * them got a page, which is exactly what happened here.
+     */
+    for (const link of screen.getAllByRole('link')) {
+      const href = link.getAttribute('href') ?? ''
+      if (!href.startsWith('/')) continue
+      expect(href, `${href} needs a file extension`).toMatch(
+        /^\/$|\.html$|^\/#/,
+      )
     }
   })
 
@@ -105,6 +131,7 @@ describe('<App />', () => {
       '/transfer-tracker.html',
       '/nchsaa-seeding.html',
       '/cpap-tracker.html',
+      '/openvpn-fleet.html',
     ])
 
     for (const link of screen.getAllByRole('link')) {

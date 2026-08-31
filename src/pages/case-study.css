@@ -428,6 +428,210 @@
 }
 
 /*
+ * OpenVPN fleet: components this page needs that the prose classes above do
+ * not cover. A section eyebrow reuses the .eyebrow token but has to clear the
+ * heading it introduces, since .case h2 owns a 58px top margin.
+ */
+.section-eyebrow {
+  margin: 58px 0 0;
+}
+
+.section-eyebrow + h2 {
+  margin-top: 8px;
+}
+
+/*
+ * The four defence layers. A list, because they are ordered by blast radius
+ * and that order is the argument -- the smallest, cheapest layer that can
+ * resolve a failure catches it first.
+ */
+.layers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.layer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+/* Built and tested, but not currently deployed. Muted rather than hidden. */
+.layer--dormant {
+  border-left-style: dashed;
+  border-left-color: var(--border-dashed);
+  background: var(--bg);
+}
+
+.layer-tag {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.layer--dormant .layer-tag {
+  color: var(--text-tertiary);
+}
+
+.case .layer-name {
+  margin: 6px 0 0;
+  font-size: 16.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.layer-detail {
+  margin: 8px 0 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-body);
+}
+
+.layer-blast {
+  margin: 12px 0 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+
+/*
+ * Failure -> response. Five columns do not fit a 620px column on a phone, so
+ * the table scrolls inside its own box rather than widening the page.
+ */
+.table-scroll {
+  overflow-x: auto;
+  margin: 22px 0 0;
+}
+
+.matrix {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.matrix th,
+.matrix td {
+  padding: 13px 14px 13px 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  font-size: 14.5px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--text-body);
+}
+
+.matrix thead th {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding-top: 0;
+}
+
+.matrix tbody th {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.matrix-note {
+  display: block;
+  margin: 3px 0 0;
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.matrix-time {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--accent-text);
+}
+
+.matrix-row--dormant .matrix-time {
+  color: var(--text-faint);
+}
+
+/* Incremental cost ledger: the money argument, as a running total. */
+.ledger {
+  margin: 22px 0 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 22px;
+}
+
+.case .ledger-title {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-weight: 400;
+}
+
+.ledger-rows {
+  margin: 14px 0 0;
+}
+
+.ledger-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-faint);
+}
+
+.ledger-row dt {
+  font-size: 14.5px;
+  color: var(--text-body);
+}
+
+.ledger-row dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 13.5px;
+  color: var(--text-tertiary);
+}
+
+.ledger-row--total {
+  border-bottom: 0;
+  border-top: 1px solid var(--border);
+  margin: 4px 0 0;
+  padding-top: 13px;
+}
+
+.ledger-row--total dt {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ledger-row--total dd {
+  font-weight: 700;
+  color: var(--accent-text);
+}
+
+.ledger-note {
+  margin: 14px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+}
+
+/*
  * The 404 index. There are only five pages, so the error page lists all of
  * them rather than offering a search box over nothing -- and a test asserts
  * this list matches the build's entry points, so it cannot go stale.

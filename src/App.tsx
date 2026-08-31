@@ -107,11 +107,16 @@ const projects: Project[] = [
     ),
   },
   {
+    // Pitch and preview chips are left as authored: the four-region framing
+    // describes the design. The case study is where the deployed footprint is
+    // spelled out.
+    href: '/openvpn-fleet.html',
     kicker: 'Infrastructure · AWS',
     title: 'OpenVPN fleet',
     pitch:
       'Four failure modes survived with ~zero dollars of new infrastructure. No load balancer, no ASG.',
     stack: 'EC2 · CloudWatch · Route 53',
+    cta: 'Read the case study',
     shipped: '2026-06',
     preview: (
       <div className="card-preview card-preview--fleet">
@@ -125,13 +130,18 @@ const projects: Project[] = [
           <span className="chip">4 regions</span>
           <span className="chip">no hot standby</span>
         </div>
-        <span className="soon-badge">case study soon</span>
       </div>
     ),
   },
 ]
 
-function ProjectCard({
+/*
+ * Exported for a direct test. Every project currently has somewhere to point,
+ * which makes the no-href branch below unreachable through <App /> alone -- but
+ * that branch is what stops the next unwritten case study from shipping as a
+ * link to nothing, so it is kept and covered rather than deleted.
+ */
+export function ProjectCard({
   href,
   kicker,
   title,
