@@ -1,10 +1,39 @@
 /// <reference types="vitest/config" />
 import { resolve } from 'node:path'
-import { defineConfig } from 'vite'
+import { createLogger, defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+
+/*
+ * The Plausible tracker is a classic script served from /js/ on this domain,
+ * which CloudFront proxies upstream to plausible.io. Vite's HTML plugin warns
+ * once per page that it "can't be bundled without type=\"module\"", because it
+ * only stays quiet for a URL that is external, a data: URI, or a real file in
+ * public/ -- and this is deliberately none of the three.
+ *
+ * Every way of satisfying the check is worse than the warning. type="module"
+ * would change the script's semantics for a file that is not an ES module; an
+ * absolute https:// URL would hardcode the production host into every page and
+ * break local preview; and a copy under public/ would put a stale vendored
+ * tracker in the bucket that CloudFront never serves, since the /js/ behaviour
+ * routes to plausible.io before S3 is consulted.
+ *
+ * So the warning is filtered rather than satisfied. The pattern is deliberately
+ * narrow -- this script path, this message -- so any other unbundleable script
+ * still warns. A test covers both halves of that.
+ */
+export const ANALYTICS_SCRIPT_WARNING =
+  /^<script src="\/js\/script[\w.-]*\.js"> in "[^"]+" can't be bundled without type="module" attribute$/
+
+const logger = createLogger()
+const parentWarn = logger.warn.bind(logger)
+logger.warn = (message, options) => {
+  if (ANALYTICS_SCRIPT_WARNING.test(message)) return
+  parentWarn(message, options)
+}
 
 // https://vite.dev/config/
 export default defineConfig({
+  customLogger: logger,
   plugins: [react()],
   build: {
     // Never inline assets as data URIs. Vite's 4 KB default would fold the
