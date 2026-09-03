@@ -25,6 +25,9 @@ Hosting resources:
   managed by the Infra-DNS-CDK repo: the `shipped` CNAME and the cert's DNS
   validation CNAME are both added there. Deploying a cert change pauses until
   the validation record lands in that zone.
+- **Apex redirect:** `beekley.dev` and `www.beekley.dev` 301 to the site, via a
+  second distribution with its own certificate and a CloudFront Function that
+  answers on viewer-request. See [Apex and www redirect](#apex-and-www-redirect).
 
 The release workflow reads `AWS_ROLE_ARN`, `AWS_REGION`, `S3_BUCKET`, and
 `CLOUDFRONT_DISTRIBUTION_ID` from repo secrets.
@@ -53,6 +56,64 @@ id to scope the deploy role's invalidation permission. So:
    meanwhile — a synth-time warning says so).
 2. Take `DistributionId` from its outputs and pass it back when deploying
    `Shipped-GithubOidc`.
+
+## Apex and www redirect
+
+`beekley.dev` and `www.beekley.dev` permanently redirect to
+`shipped.beekley.dev`, preserving path and query string.
+
+It is a **second** distribution (`RedirectDistribution`) rather than two more
+aliases on the site's, and that is the whole design decision. Adding names to
+the site's distribution replaces its certificate, and the replacement cannot
+validate until a record lands in a zone this account does not own — so the
+distribution that serves the live site would sit mid-update for the length of a
+cross-repo, cross-account round trip. As a separate distribution the change is
+additive: `cdk diff` touches nothing that serves the site.
+
+The redirect's origin is never contacted — the viewer-request function returns
+a 301 before CloudFront consults the cache or origin. It points at the
+canonical host anyway, so that detaching the function degrades to serving the
+site rather than to an error.
+
+Its response headers policy is the site's minus `includeSubdomains` on HSTS.
+That distribution answers for the **zone apex**, so the flag would pin every
+sibling — `seeding`, `transfer-tracker`, and the delegated `vpn` and `stitch`
+zones, in accounts this stack knows nothing about — to HTTPS for two years in
+any browser that followed the redirect.
+
+### Bringing it up
+
+Both certificate validation and the public records live in the Infra-DNS-CDK
+repo's `beekley.dev` zone, so this is a three-step handoff:
+
+1. `npx cdk deploy Shipped-Hosting`. It pauses creating `RedirectCertificate`,
+   waiting on validation for both names.
+2. Read the two validation CNAMEs and add them to the `beekley.dev` zone:
+
+   ```bash
+   aws acm describe-certificate --certificate-arn <arn> \
+     --query 'Certificate.DomainValidationOptions[].ResourceRecord'
+   ```
+
+   Deploy Infra-DNS-CDK. The certificate validates and step 1 completes.
+
+3. Point the names at the redirect distribution, using the stack's
+   `RedirectDistributionDomainName` output. In the `beekley.dev` zone:
+
+   | Record            | Type       | Value                                   |
+   | ----------------- | ---------- | --------------------------------------- |
+   | `beekley.dev`     | A alias    | the redirect distribution's domain name |
+   | `beekley.dev`     | AAAA alias | the redirect distribution's domain name |
+   | `www.beekley.dev` | CNAME      | the redirect distribution's domain name |
+
+   The apex cannot be a CNAME, so it needs Route 53 **alias** records — target
+   hosted zone `Z2FDTNDATAQYW2`, CloudFront's fixed zone id. AAAA as well as A
+   because CloudFront distributions answer on IPv6 by default. `www` is an
+   ordinary CNAME, matching the other records in that zone.
+
+Order matters in step 3: the records must land _after_ the certificate
+validates, or the distribution will answer for names it does not yet hold and
+CloudFront will serve an error instead of the redirect.
 
 ## GitHub OIDC deploy role
 
