@@ -77,7 +77,7 @@ arn:aws:iam::<account-id>:role/shipped-github-actions-deploy
 ```bash
 export AWS_PROFILE=<profile>          # populates CDK_DEFAULT_ACCOUNT
 
-npm run build      # tsc
+npm run build      # tsc type check (output goes to dist/, unused at runtime)
 npm test           # jest (assertions on synthesized templates)
 npx cdk synth      # emit CloudFormation
 npx cdk diff       # diff against deployed state
