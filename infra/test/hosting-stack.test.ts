@@ -54,8 +54,11 @@ describe('HostingStack', () => {
   })
 
   test('sets HSTS for two years, subdomains included, preload off', () => {
+    // Pinned to the site's policy by comment: the redirect below adds a second
+    // policy, and this assertion is about this one.
     template.hasResourceProperties('AWS::CloudFront::ResponseHeadersPolicy', {
       ResponseHeadersPolicyConfig: Match.objectLike({
+        Comment: 'Security headers for the Shipped SPA',
         SecurityHeadersConfig: Match.objectLike({
           StrictTransportSecurity: {
             AccessControlMaxAgeSec: 63072000,
@@ -71,6 +74,7 @@ describe('HostingStack', () => {
   test('sets nosniff, DENY framing, and a strict referrer policy', () => {
     template.hasResourceProperties('AWS::CloudFront::ResponseHeadersPolicy', {
       ResponseHeadersPolicyConfig: Match.objectLike({
+        Comment: 'Security headers for the Shipped SPA',
         SecurityHeadersConfig: Match.objectLike({
           ContentTypeOptions: { Override: true },
           FrameOptions: { FrameOption: 'DENY', Override: true },
@@ -173,5 +177,85 @@ describe('HostingStack', () => {
         ],
       }),
     })
+  })
+
+  test('requests one DNS-validated certificate covering the apex and www', () => {
+    template.hasResourceProperties('AWS::CertificateManager::Certificate', {
+      DomainName: 'beekley.dev',
+      SubjectAlternativeNames: ['www.beekley.dev'],
+      ValidationMethod: 'DNS',
+    })
+  })
+
+  test('serves the apex and www from their own distribution', () => {
+    // Their own, not extra aliases on the site's: adding names there would
+    // replace the live certificate, and the replacement cannot validate until
+    // a record lands in a zone this account does not own.
+    template.resourceCountIs('AWS::CloudFront::Distribution', 2)
+
+    template.hasResourceProperties('AWS::CloudFront::Distribution', {
+      DistributionConfig: Match.objectLike({
+        Aliases: ['beekley.dev', 'www.beekley.dev'],
+        ViewerCertificate: Match.objectLike({
+          AcmCertificateArn: {
+            Ref: Match.stringLikeRegexp('RedirectCertificate'),
+          },
+        }),
+      }),
+    })
+  })
+
+  test('the site distribution keeps serving only the site domain', () => {
+    template.hasResourceProperties('AWS::CloudFront::Distribution', {
+      DistributionConfig: Match.objectLike({
+        Aliases: [config.siteDomain],
+      }),
+    })
+  })
+
+  test('redirects to the canonical host with a 301, path and query kept', () => {
+    const code = Object.values(
+      template.findResources('AWS::CloudFront::Function'),
+    )[0].Properties.FunctionCode as string
+
+    expect(code).toContain(`'https://${config.siteDomain}' + request.uri`)
+    expect(code).toContain('statusCode: 301')
+    expect(code).toContain("query.join('&')")
+  })
+
+  test('runs the redirect on viewer-request, before any origin is hit', () => {
+    template.hasResourceProperties('AWS::CloudFront::Distribution', {
+      DistributionConfig: Match.objectLike({
+        Aliases: ['beekley.dev', 'www.beekley.dev'],
+        DefaultCacheBehavior: Match.objectLike({
+          FunctionAssociations: [
+            Match.objectLike({ EventType: 'viewer-request' }),
+          ],
+        }),
+      }),
+    })
+  })
+
+  test('leaves includeSubdomains off on the redirect, to spare siblings', () => {
+    // This distribution answers for the zone apex, so includeSubdomains would
+    // pin seeding, transfer-tracker, and the delegated vpn and stitch zones to
+    // HTTPS for two years in any browser that followed the redirect.
+    template.hasResourceProperties('AWS::CloudFront::ResponseHeadersPolicy', {
+      ResponseHeadersPolicyConfig: Match.objectLike({
+        Comment: 'Security headers for the apex and www redirect',
+        SecurityHeadersConfig: Match.objectLike({
+          StrictTransportSecurity: {
+            AccessControlMaxAgeSec: 63072000,
+            IncludeSubdomains: false,
+            Preload: false,
+            Override: true,
+          },
+        }),
+      }),
+    })
+  })
+
+  test('outputs the domain the apex and www records point at', () => {
+    template.hasOutput('RedirectDistributionDomainName', {})
   })
 })

@@ -12,6 +12,10 @@ import { config } from './config'
  * the GitHub OIDC deploy role (in GithubOidcStack) already grants access to
  * it; the stack outputs feed the release workflow secrets (S3_BUCKET,
  * CLOUDFRONT_DISTRIBUTION_ID).
+ *
+ * A second, redirect-only distribution answers for `config.redirectDomains`
+ * (the apex and www) with a 301 to the canonical host -- see the "Apex and www
+ * redirect" section of infra/README.md for why it is separate.
  */
 export class HostingStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -199,6 +203,138 @@ export class HostingStack extends cdk.Stack {
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
     })
 
+    /*
+     * beekley.dev and www.beekley.dev, permanently redirected to the canonical
+     * host.
+     *
+     * Deliberately a second distribution rather than two more aliases on the
+     * one above. Adding names to that distribution means replacing its
+     * certificate, and the replacement cannot validate until a record lands in
+     * a zone this account does not own -- so the live site's distribution would
+     * sit mid-update for however long that cross-repo, cross-account round trip
+     * took. Everything below is additive instead: `cdk diff` for this change
+     * touches nothing that serves the site.
+     */
+    const [redirectPrimaryDomain, ...redirectAlternateDomains] =
+      config.redirectDomains
+
+    const redirectCertificate = new acm.Certificate(
+      this,
+      'RedirectCertificate',
+      {
+        domainName: redirectPrimaryDomain,
+        subjectAlternativeNames: [...redirectAlternateDomains],
+        // Same cross-account story as SiteCertificate above: deploying pauses
+        // until both validation CNAMEs are added to the beekley.dev zone.
+        validation: acm.CertificateValidation.fromDns(),
+      },
+    )
+
+    const redirectFunction = new cloudfront.Function(this, 'RedirectFunction', {
+      comment: `301 the apex and www to ${config.siteDomain}`,
+      runtime: cloudfront.FunctionRuntime.JS_2_0,
+      code: cloudfront.FunctionCode.fromInline(`
+function handler(event) {
+  var request = event.request
+  var location = 'https://${config.siteDomain}' + request.uri
+  var query = []
+
+  /*
+   * Path and query are carried across so a link that picks up a campaign tag
+   * or a deep path still lands where it meant to. Duplicated parameters
+   * collapse into a single field whose multiValue array repeats the first
+   * value, so multiValue is the complete list whenever it is present.
+   * Emitting "name=value" unconditionally round-trips an empty value
+   * ("?ref=") instead of dropping the "=".
+   */
+  for (var name in request.querystring) {
+    var parameter = request.querystring[name]
+    var values = parameter.multiValue || [parameter]
+    for (var i = 0; i < values.length; i++) {
+      query.push(name + '=' + values[i].value)
+    }
+  }
+
+  if (query.length > 0) {
+    location = location + '?' + query.join('&')
+  }
+
+  return {
+    statusCode: 301,
+    statusDescription: 'Moved Permanently',
+    headers: { location: { value: location } },
+  }
+}
+`),
+    })
+
+    const redirectHeaders = new cloudfront.ResponseHeadersPolicy(
+      this,
+      'RedirectSecurityHeaders',
+      {
+        comment: 'Security headers for the apex and www redirect',
+        securityHeadersBehavior: {
+          contentTypeOptions: { override: true }, // nosniff
+          frameOptions: {
+            frameOption: cloudfront.HeadersFrameOption.DENY,
+            override: true,
+          },
+          referrerPolicy: {
+            referrerPolicy:
+              cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
+            override: true,
+          },
+          strictTransportSecurity: {
+            accessControlMaxAge: cdk.Duration.days(730),
+            /*
+             * The one place this policy deliberately differs from the site's:
+             * includeSubdomains is off here. This distribution answers for the
+             * zone apex, so the flag would pin every sibling -- seeding,
+             * transfer-tracker, and the delegated vpn and stitch zones, which
+             * live in accounts this stack knows nothing about -- to HTTPS for
+             * two years in any browser that had followed the redirect. Pinning
+             * beekley.dev itself is the whole intent and costs nothing; pinning
+             * the rest of the zone as a side effect of a redirect is not this
+             * change's call to make.
+             */
+            includeSubdomains: false,
+            preload: false,
+            override: true,
+          },
+        },
+      },
+    )
+
+    const redirectDistribution = new cloudfront.Distribution(
+      this,
+      'RedirectDistribution',
+      {
+        comment: `Redirects the apex and www to ${config.siteDomain}`,
+        domainNames: [...config.redirectDomains],
+        certificate: redirectCertificate,
+        defaultBehavior: {
+          /*
+           * Never contacted: the viewer-request function answers before
+           * CloudFront consults the cache or the origin. A distribution still
+           * requires one, so it points at the canonical host -- if the function
+           * were ever detached, the fallback is the site rather than an error.
+           */
+          origin: new origins.HttpOrigin(config.siteDomain),
+          viewerProtocolPolicy:
+            cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          responseHeadersPolicy: redirectHeaders,
+          functionAssociations: [
+            {
+              function: redirectFunction,
+              eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+            },
+          ],
+        },
+        priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
+      },
+    )
+
     new cdk.CfnOutput(this, 'BucketName', {
       value: bucket.bucketName,
       description: 'Set this as the S3_BUCKET GitHub Actions secret',
@@ -213,6 +349,13 @@ export class HostingStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'DistributionDomainName', {
       value: distribution.distributionDomainName,
       description: 'CloudFront domain serving the SPA',
+    })
+
+    new cdk.CfnOutput(this, 'RedirectDistributionDomainName', {
+      value: redirectDistribution.distributionDomainName,
+      description:
+        'CloudFront domain the apex A/AAAA alias and the www CNAME point at, ' +
+        'in the beekley.dev zone (Infra-DNS-CDK)',
     })
   }
 }

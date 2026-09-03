@@ -100,7 +100,8 @@ deployment in the Actions run.
 
 AWS infrastructure is managed with CDK in [`infra/`](infra/README.md): a GitHub
 OIDC deploy role and an S3 + CloudFront hosting stack serving
-[shipped.beekley.dev](https://shipped.beekley.dev). Account-specific
+[shipped.beekley.dev](https://shipped.beekley.dev), which `beekley.dev` and
+`www.beekley.dev` redirect to. Account-specific
 identifiers resolve at synth time rather than being committed — see the
 [infra README](infra/README.md#resolving-values).
 
