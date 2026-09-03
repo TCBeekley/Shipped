@@ -69,6 +69,18 @@ export const config = {
    * `shipped` CNAME and the ACM validation record are added there.
    */
   siteDomain: 'shipped.beekley.dev',
+
+  /**
+   * Hostnames that permanently redirect to `siteDomain`. Neither has ever
+   * served anything -- the zone carries only subdomains (`seeding`,
+   * `shipped`, `transfer-tracker`, and delegations for `vpn` and `stitch`) --
+   * so pointing the bare domain at the portfolio costs nothing and stops the
+   * obvious guess from failing to resolve.
+   *
+   * The first entry is the certificate's subject; the rest are SANs. Their
+   * records live in the same cross-account zone as `siteDomain`'s.
+   */
+  redirectDomains: ['beekley.dev', 'www.beekley.dev'],
 } as const
 
 /**
