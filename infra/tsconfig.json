@@ -20,7 +20,11 @@
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
-    "typeRoots": ["./node_modules/@types"]
+    "typeRoots": ["./node_modules/@types"],
+    // `npm run build` is a type check — the CDK app runs through ts-node and the
+    // tests through ts-jest, so nothing consumes this output. Emitting it into
+    // dist/ keeps compiled .js from sitting next to, and shadowing, its source.
+    "outDir": "dist"
   },
-  "exclude": ["node_modules", "cdk.out"]
+  "exclude": ["node_modules", "cdk.out", "dist"]
 }
